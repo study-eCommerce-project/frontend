@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 export default function Login() {
   const router = useRouter();
@@ -9,15 +10,28 @@ export default function Login() {
   const [id, setId] = useState<string>("");
   const [pw, setPw] = useState<string>("");
 
-  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    console.log("아이디:", id);
-    console.log("비밀번호:", pw);
+    try {
+      const response = await axios.post("http://localhost:8080/api/login", {
+        id: id,
+        pw: pw,
+      });
 
-    // TODO: 로그인 API 연결 예정
-    // 로그인 성공 시 이동
-    router.push("/");
+      console.log("서버 응답:", response.data);
+
+      // 로그인 성공 시
+      alert("로그인 성공!");
+      router.push("/");
+    } catch (error: any) {
+      if (error.response) {
+        alert(`로그인 실패: ${error.response.data}`);
+      } else {
+        alert("서버와의 연결에 실패했습니다.");
+      }
+      console.error("로그인 요청 오류:", error);
+    }
   };
 
   return (
