@@ -1,31 +1,31 @@
 "use client";
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
-interface User {
-  user_name: string;
-}
+type User = { user_name: string } | null;
 
-interface UserContextType {
-  user: User | null;
-  setUser: (user: User | null) => void;
-}
+const UserContext = createContext<{
+  user: User;
+  setUser: (user: User) => void;
+}>({
+  user: null,
+  setUser: () => {},
+});
 
-const UserContext = createContext<UserContextType | undefined>(undefined);
+export function UserProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User>(null);
 
-export function UserProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("user_name");
-      return stored ? { user_name: stored } : null;
-    }
-    return null;
-  });
+  useEffect(() => {
+    const stored = sessionStorage.getItem("user_name"); // ✅ sessionStorage 사용
+    if (stored) setUser({ user_name: stored });
+  }, []);
 
-  return <UserContext.Provider value={{ user, setUser }}>{children}</UserContext.Provider>;
+  return (
+    <UserContext.Provider value={{ user, setUser }}>
+      {children}
+    </UserContext.Provider>
+  );
 }
 
 export function useUser() {
-  const context = useContext(UserContext);
-  if (!context) throw new Error("useUser must be used within UserProvider");
-  return context;
+  return useContext(UserContext);
 }
