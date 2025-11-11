@@ -51,7 +51,7 @@ export default function Signup() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="example@email.com"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            className="text-black w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
             required
           />
         </div>
@@ -63,7 +63,7 @@ export default function Signup() {
             value={pw}
             onChange={(e) => setPw(e.target.value)}
             placeholder="비밀번호 입력"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            className="text-black w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
             required
           />
         </div>
@@ -75,7 +75,7 @@ export default function Signup() {
             value={pwCheck}
             onChange={(e) => setPwCheck(e.target.value)}
             placeholder="비밀번호 재입력"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            className="text-black w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
             required
           />
         </div>
