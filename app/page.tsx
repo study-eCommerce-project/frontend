@@ -21,6 +21,10 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [currentBanner, setCurrentBanner] = useState(0);
 
+  const handleDotClick = (index: number) => {
+    setCurrentBanner(index);
+  };
+
   useEffect(() => {
     fetch("http://localhost:8080/api/products")
       .then((res) => res.json())
@@ -49,37 +53,42 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4">
+    <div className="min-h-screen justify-self-center">
+      
       {/* 배너 슬라이더 */}
-      <div className="w-full relative">
+      <div className="w-screen relative">
         <div className="w-full pt-50 relative overflow-hidden">
           {banners.map((banner, index) => (
             <img
               key={index}
               src={banner}
               alt={`배너 ${index + 1}`}
-              className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-700 ${
-                index === currentBanner ? "opacity-100 z-10" : "opacity-0 z-0"
-              }`}
+              className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-700 ${index === currentBanner ? "opacity-100 z-10" : "opacity-0 z-0"
+                }`}
             />
           ))}
         </div>
 
-        {/* 선택적: 아래 점 표시 */}
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        {/* 슬라이더 인디케이터 */}
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-3 z-20">
           {banners.map((_, index) => (
-            <span
+            <button
               key={index}
-              className={`w-2 h-2 rounded-full ${
-                index === currentBanner ? "bg-blue-600" : "bg-white/50"
-              }`}
+              onClick={() => handleDotClick(index)} // <--- 이 함수를 호출합니다!
+              className={`
+              w-2 h-2 rounded-full transition-colors duration-300 ease-in-out
+              ${index === currentBanner
+                  ? "bg-white shadow-md"
+                  : "bg-white/50 hover:bg-white/80"
+                }
+            `}
             />
           ))}
         </div>
       </div>
 
       {/* 상품 목록 */}
-      <div className="max-w-4xl mx-auto mt-8">
+      <div className="max-w-4xl mx-auto mt-8 px-4">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">상품 목록</h1>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">

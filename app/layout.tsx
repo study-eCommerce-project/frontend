@@ -15,7 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className="pt-16 flex flex-col min-h-screen">
+      <body className="pt-6 flex flex-col min-h-screen">
         <Providers>
           <Header />
           {/* 배경을 main에 적용하고 padding은 main 내부에서 통일 */}
