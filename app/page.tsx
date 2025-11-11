@@ -4,8 +4,18 @@ import { products } from "./lib/products";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gray-100 px-4 py-10">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gray-100 px-4">
+      {/* 배너 */}
+      <div className="w-full h-full overflow-hidden">
+        <img
+          src="images/banner.png"
+          alt="banner"
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      {/* 상품 목록 */}
+      <div className="max-w-4xl mx-auto mt-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">상품 목록</h1>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">

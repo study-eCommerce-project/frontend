@@ -29,44 +29,46 @@ export default function SearchPage() {
   }, [keyword]);
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">
-        “{keyword}” 검색 결과
-      </h2>
+    <div className="min-h-screen bg-gray-100 px-4 py-10">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-3xl font-bold text-gray-900 mb-8">
+          “<span className="text-blue-600">{keyword}</span>” 검색 결과
+        </h2>
 
-      {loading && <p>검색 중입니다...</p>}
+        {loading && <p className="text-gray-700 text-center py-10">검색 중입니다...</p>}
 
-      {!loading && results.length === 0 && <p>검색 결과가 없습니다.</p>}
+        {!loading && results.length === 0 && (
+          <p className="text-xl text-gray-700 text-center mt-50 py-10">검색 결과가 없습니다.</p>
+        )}
 
-      {!loading && results.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {results.map((item, i) => (
-            <div
-              key={i}
-              className="p-3 bg-white rounded shadow hover:shadow-lg transition"
-            >
-              <img
-                src={item.image}
-                alt={item.title}
-                className="w-full h-40 object-contain"
-              />
-              <p
-                className="text-sm mt-2"
-                dangerouslySetInnerHTML={{ __html: item.title }}
-              />
-              <p className="text-blue-600 font-bold">{item.lprice}원</p>
+        {!loading && results.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+            {results.map((item, i) => (
               <a
+                key={i}
                 href={item.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-gray-500 underline"
+                className="bg-white rounded-xl shadow hover:shadow-lg transition p-4 flex flex-col items-center cursor-pointer"
               >
-                상품 보기
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="w-full h-40 object-contain mb-3"
+                />
+                <p
+                  className="text-gray-800 text-center text-sm font-medium mb-1 line-clamp-2 h-10"
+                  dangerouslySetInnerHTML={{ __html: item.title }}
+                />
+                <p className="text-blue-600 font-bold">{item.lprice.toLocaleString()}원</p>
+                <span className="text-xs text-gray-500 underline mt-2 hover:text-blue-600">
+                  상품 보기 →
+                </span>
               </a>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
