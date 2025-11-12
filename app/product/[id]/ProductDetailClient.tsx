@@ -5,10 +5,10 @@ import Image from "next/image";
 
 export default function ProductDetailClient({
   product,
-  user,
+  user = null,
 }: {
   product: any;
-  user: { name: string } | null;
+  user?: { name: string } | null;
 }) {
   const [count, setCount] = useState(1);
 

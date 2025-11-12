@@ -42,6 +42,7 @@ export default function Home() {
     const interval = setInterval(() => {
       setCurrentBanner((prev) => (prev + 1) % banners.length);
     }, 3000)
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {

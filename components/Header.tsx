@@ -57,7 +57,7 @@ export default function Header() {
       <div className="flex-1 flex justify-center">
         <form onSubmit={handleSearch} className="relative w-full max-w-sm">
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-            <img src="images/search.png" alt="검색" className="w-4 h-4"/>
+            <img src="/images/search.png" alt="검색" className="w-4 h-4"/>
           </span>
           <input
             type="text"
