@@ -36,7 +36,7 @@ export default function ProductDetailClient({
         productId: product.productId,
         productName: product.productName,
         price: product.sellPrice,
-        thumbnailUrl: product.thumbnailUrl,
+        mainImg: product.mainImg,
         count,
       });
     }
@@ -55,7 +55,7 @@ export default function ProductDetailClient({
       {/* 대표 이미지 */}
       <div className="flex justify-center mb-6">
         <Image
-          src={`/images/${product.thumbnailUrl || "default_main.png"}`}
+          src={`${product.mainImg || "default_main.png"}`}
           alt={product.productName}
           width={400}
           height={320}
@@ -85,14 +85,14 @@ export default function ProductDetailClient({
       <div className="flex justify-center items-center space-x-5 mb-8">
         <button
           onClick={() => setCount((prev) => Math.max(1, prev - 1))}
-          className="px-4 py-2 bg-gray-400 rounded-lg hover:bg-gray-500 cursor-pointer"
+          className="px-4 py-2 bg-gray-400 rounded-lg hover:bg-gray-500"
         >
           -
         </button>
         <span className="text-lg font-semibold text-gray-800">{count}</span>
         <button
           onClick={() => setCount((prev) => prev + 1)}
-          className="px-4 py-2 bg-gray-400 rounded-lg hover:bg-gray-500 cursor-pointer"
+          className="px-4 py-2 bg-gray-400 rounded-lg hover:bg-gray-500"
         >
           +
         </button>
