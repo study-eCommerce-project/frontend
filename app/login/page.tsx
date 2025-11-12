@@ -59,26 +59,27 @@ export default function LoginPage() {
       >
         <h2 className="text-2xl font-bold text-center text-gray-900">로그인</h2>
 
-      <input
-        type="text"
-        placeholder="아이디 (이메일)"
-        value={id}
-        onChange={(e) => setId(e.target.value)}
-        className="text-black p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-        required
-      />
+        <input
+          type="text"
+          placeholder="아이디 (이메일)"
+          value={id}
+          onChange={(e) => setId(e.target.value)}
+          className="text-black p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 ring-blue-500"
+          required
+          autoFocus
+        />
 
-      <input
-        type="password"
-        placeholder="비밀번호"
-        value={pw}
-        onChange={(e) => setPw(e.target.value)}
-        className="text-black p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-        required
-      />
+        <input
+          type="password"
+          placeholder="비밀번호"
+          value={pw}
+          onChange={(e) => setPw(e.target.value)}
+          className="text-black p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 ring-blue-500"
+          required
+        />
         <button
           type="submit"
-          className="p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-500 transition"
+          className="p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-500 transition cursor-pointer"
         >
           로그인
         </button>

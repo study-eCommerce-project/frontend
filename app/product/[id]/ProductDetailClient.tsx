@@ -85,14 +85,14 @@ export default function ProductDetailClient({
       <div className="flex justify-center items-center space-x-5 mb-8">
         <button
           onClick={() => setCount((prev) => Math.max(1, prev - 1))}
-          className="px-4 py-2 bg-gray-400 rounded-lg hover:bg-gray-500"
+          className="px-4 py-2 bg-gray-400 rounded-lg hover:bg-gray-500 cursor-pointer"
         >
           -
         </button>
         <span className="text-lg font-semibold text-gray-800">{count}</span>
         <button
           onClick={() => setCount((prev) => prev + 1)}
-          className="px-4 py-2 bg-gray-400 rounded-lg hover:bg-gray-500"
+          className="px-4 py-2 bg-gray-400 rounded-lg hover:bg-gray-500 cursor-pointer"
         >
           +
         </button>

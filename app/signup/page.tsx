@@ -75,7 +75,7 @@ export default function Signup() {
     <div className="min-h-screen flex justify-center items-center bg-gray-100 px-4">
       <form
         onSubmit={handleSignup}
-        className="w-full max-w-sm bg-white rounded-xl shadow-lg p-8 space-y-5"
+        className="w-full max-w-sm bg-white rounded-xl shadow-lg p-8 flex flex-col gap-5"
       >
         <h2 className="text-2xl font-bold text-center text-gray-900">회원가입</h2>
 
@@ -87,8 +87,9 @@ export default function Signup() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="이름을 입력하세요"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full text-black p-3 border border-gray-300 rounded-lg focus:ring-2 ring-blue-500 outline-none"
             required
+            autoFocus
           />
         </div>
 
@@ -99,7 +100,7 @@ export default function Signup() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="010-1234-5678"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full text-black p-3 border border-gray-300 rounded-lg focus:ring-2 ring-blue-500 outline-none"
             required
           />
         </div>
@@ -111,7 +112,7 @@ export default function Signup() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="example@email.com"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full text-black p-3 border border-gray-300 rounded-lg focus:ring-2 ring-blue-500 outline-none"
             required
           />
         </div>
@@ -123,7 +124,7 @@ export default function Signup() {
             value={pw}
             onChange={(e) => setPw(e.target.value)}
             placeholder="비밀번호 입력"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full text-black p-3 border border-gray-300 rounded-lg focus:ring-2 ring-blue-500 outline-none"
             required
           />
         </div>
@@ -135,7 +136,7 @@ export default function Signup() {
             value={pwCheck}
             onChange={(e) => setPwCheck(e.target.value)}
             placeholder="비밀번호 재입력"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full text-black p-3 border border-gray-300 rounded-lg focus:ring-2 ring-blue-500 outline-none"
             required
           />
         </div>
@@ -149,12 +150,12 @@ export default function Signup() {
               value={address}
               readOnly
               placeholder="주소를 검색하세요"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-4/5 text-black p-3 border border-gray-300 rounded-lg focus:ring-2 ring-blue-500 outline-none"
             />
             <button
               type="button"
               onClick={handleSearchAddress}
-              className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500"
+              className="w-1/5 bg-gray-500 text-white rounded-lg hover:bg-gray-600 cursor-pointer"
             >
               검색
             </button>
@@ -166,13 +167,13 @@ export default function Signup() {
             value={addressDetail}
             onChange={(e) => setAddressDetail(e.target.value)}
             placeholder="상세주소 입력 (동/호수 등)"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full text-black p-3 border border-gray-300 rounded-lg focus:ring-2 ring-blue-500 outline-none"
           />
         </div>
 
         <button
           type="submit"
-          className="w-full p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-500 transition"
+          className="w-full p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-500 transition cursor-pointer"
         >
           회원가입
         </button>

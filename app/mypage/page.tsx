@@ -13,7 +13,7 @@ export default function MyPage() {
         {user ? (
           <div className="space-y-4">
             <p className="text-gray-700 text-lg font-medium">
-              {user.user_name}님 환영합니다 👋
+              {user.user_name}님 환영합니다
             </p>
 
             <div className="flex gap-3">

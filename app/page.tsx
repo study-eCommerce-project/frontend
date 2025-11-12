@@ -77,7 +77,7 @@ export default function Home() {
               key={index}
               onClick={() => handleDotClick(index)} // <--- 이 함수를 호출합니다!
               className={`
-              w-2 h-2 rounded-full transition-colors duration-300 ease-in-out
+              w-2 h-2 rounded-full transition-colors duration-300 ease-in-out hover: cursor-pointer
               ${index === currentBanner
                   ? "bg-white shadow-md"
                   : "bg-white/50 hover:bg-white/80"
