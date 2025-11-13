@@ -2,99 +2,120 @@
 
 import Image from "next/image";
 import { useCart } from "../../context/CartContext";
+import { Trash2, Plus, Minus } from "lucide-react";
 
 export default function CartPage() {
   const { cart, removeFromCart, updateCount } = useCart();
-
-  const totalPrice = cart.reduce(
-    (sum, item) => sum + item.price * item.count,
-    0
-  );
+  const totalPrice = cart.reduce((sum, item) => sum + item.price * item.count, 0);
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 py-10">
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">장바구니</h1>
+    <div className="min-h-screen bg-gray-100 py-10 px-6">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* 🧺 장바구니 목록 */}
+        <div className="lg:col-span-2 bg-white rounded-xl shadow p-6 flex flex-col gap-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">장바구니</h1>
 
-        {cart.length === 0 ? (
-          <p className="text-gray-600 text-lg text-center py-10">
-            장바구니가 비어있습니다.
-          </p>
-        ) : (
-          <>
-            <div className="space-y-4">
-              {cart.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between border-b border-gray-200 pb-4"
-                >
-                  <div className="flex items-center gap-4">
-                    {item.thumbnailUrl && (
-                      <Image
-                        src={`/images/${item.thumbnailUrl}`}
-                        alt={item.name}
-                        width={80}
-                        height={80}
-                        className="rounded-md object-cover"
-                      />
+          {cart.length === 0 ? (
+            <p className="text-gray-500 text-center py-10 text-lg">
+              장바구니가 비어있습니다.
+            </p>
+          ) : (
+            cart.map((item) => (
+              <div
+                key={item.id}
+                className="flex flex-col md:flex-row items-center gap-4 border-b border-gray-200 pb-4"
+              >
+                {/* 상품 이미지 */}
+                <div className="w-28 h-28 flex-shrink-0">
+                  <Image
+                    src={`/images/${item.thumbnailUrl}`}
+                    alt={item.productName}
+                    width={112}
+                    height={112}
+                    className="rounded-lg object-contain border"
+                  />
+                </div>
+
+                {/* 상품 정보 */}
+                <div className="flex-1 flex flex-col justify-between h-full">
+                  <div>
+                    <p className="text-lg font-semibold text-gray-800">
+                      {item.productName}
+                    </p>
+                    {item.option && (
+                      <p className="text-gray-500 text-sm mt-1">
+                        옵션: {item.option}
+                      </p>
                     )}
+                    {item.color && (
+                      <p className="text-gray-500 text-sm">색상: {item.color}</p>
+                    )}
+                  </div>
 
-                    <div>
-                      <p className="text-lg font-semibold text-gray-800">
-                        {item.name}
-                      </p>
-                      <p className="text-gray-600 text-sm mt-1">
-                        {item.price.toLocaleString()}원
+                  <div className="flex items-center justify-between mt-3">
+                    {/* 수량 조절 */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() =>
+                          updateCount(item.id, Math.max(1, item.count - 1))
+                        }
+                        className="p-1 bg-gray-400 rounded hover:bg-gray-500 transition cursor-pointer"
+                      >
+                        <Minus size={16} />
+                      </button>
+                      <span className="w-6 text-center text-gray-800 font-medium">{item.count}</span>
+                      <button
+                        onClick={() => updateCount(item.id, item.count + 1)}
+                        className="p-1 bg-gray-400 rounded hover:bg-gray-500 transition cursor-pointer"
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {/* 가격 */}
+                      <p className="text-gray-900 font-bold">
+                        {(item.price * item.count).toLocaleString()}원
                       </p>
 
-                      <div className="flex items-center gap-2 mt-2">
-                        <button
-                          onClick={() =>
-                            updateCount(item.id, Math.max(1, item.count - 1))
-                          }
-                          className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
-                        >
-                          -
-                        </button>
-                        <span className="text-sm font-semibold">
-                          {item.count}
-                        </span>
-                        <button
-                          onClick={() => updateCount(item.id, item.count + 1)}
-                          className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
-                        >
-                          +
-                        </button>
-                      </div>
+                      {/* 삭제 */}
+                      <button
+                        onClick={() => removeFromCart(item.id)}
+                        className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm  cursor-pointer"
+                      >
+                        <Trash2 size={14} /> 삭제
+                      </button>
                     </div>
                   </div>
-
-                  <div className="flex flex-col items-end">
-                    <p className="text-gray-800 font-semibold mb-2">
-                      {(item.price * item.count).toLocaleString()}원
-                    </p>
-                    <button
-                      onClick={() => removeFromCart(item.id)}
-                      className="text-sm bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition"
-                    >
-                      삭제
-                    </button>
-                  </div>
                 </div>
-              ))}
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* 💳 결제 요약 */}
+        {cart.length > 0 && (
+          <div className="bg-white rounded-xl shadow p-6 flex flex-col gap-6 h-fit sticky top-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">결제 정보</h2>
+
+            <div className="flex flex-col gap-3 text-gray-700">
+              <div className="flex justify-between">
+                <span>상품 금액</span>
+                <span>{totalPrice.toLocaleString()}원</span>
+              </div>
+              <div className="flex justify-between">
+                <span>배송비</span>
+                <span className="text-blue-600">무료</span>
+              </div>
+              <div className="flex justify-between pt-3 border-t font-bold text-lg">
+                <span>총 결제 금액</span>
+                <span className="text-blue-600">{totalPrice.toLocaleString()}원</span>
+              </div>
             </div>
 
-            <div className="border-t border-gray-300 mt-6 pt-6 flex justify-between items-center">
-              <p className="text-xl font-semibold text-gray-800">총 합계</p>
-              <p className="text-2xl font-bold text-blue-600">
-                {totalPrice.toLocaleString()}원
-              </p>
-            </div>
-
-            <button className="w-full mt-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">
-              주문하기
+            <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-semibold transition cursor-pointer">
+              {totalPrice.toLocaleString()}원 결제하기
             </button>
-          </>
+          </div>
         )}
       </div>
     </div>

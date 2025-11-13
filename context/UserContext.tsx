@@ -1,31 +1,33 @@
 "use client";
-import { createContext, useContext, useEffect, useState } from "react";
 
-type User = { user_name: string } | null;
+import { createContext, useContext, useState, ReactNode } from "react";
 
-const UserContext = createContext<{
-  user: User;
-  setUser: (user: User) => void;
-}>({
+interface User {
+  name: string;
+}
+
+interface UserContextType {
+  user: User | null;
+  setUser: (user: User | null) => void;
+}
+
+const UserContext = createContext<UserContextType>({
   user: null,
   setUser: () => {},
 });
 
-export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User>(null);
-
-  useEffect(() => {
-    const stored = sessionStorage.getItem("user_name"); // ✅ sessionStorage 사용
-    if (stored) setUser({ user_name: stored });
-  }, []);
+export const UserProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(() => {
+    // 새로고침 시 LocalStorage에서 로그인 정보 불러오기
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
   return (
     <UserContext.Provider value={{ user, setUser }}>
       {children}
     </UserContext.Provider>
   );
-}
+};
 
-export function useUser() {
-  return useContext(UserContext);
-}
+export const useUser = () => useContext(UserContext);
