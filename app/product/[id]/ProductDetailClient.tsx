@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Heart } from "lucide-react";
+import { Heart, Plus, Minus } from "lucide-react";
 import { useUser } from "../../../context/UserContext";
 import { useCart } from "../../../context/CartContext";
 
@@ -63,7 +63,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       productId: product.productId,
       productName: product.productName,
       price: product.sellPrice,
-      thumbnailUrl: product.thumbnailUrl,
+      thumbnailUrl: product.mainImg,
       option: product.isoption === 1 ? selectedOption : null,
       color: selectedColor,
       count,
@@ -84,8 +84,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
           className="flex justify-center relative"
           style={{ height: imageHeight ? `${imageHeight}px` : "auto" }}
         >
-          <Image
-            src={`/images/${product.thumbnailUrl || "default_main.png"}`}
+          <img
+            src={product.mainImg || "/images/default_main.png"}
             alt={product.productName}
             width={450}
             height={450}
@@ -97,11 +97,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <button
                   key={color}
                   onClick={() => setSelectedColor(color)}
-                  className={`w-9 h-9 rounded-full border-2 transition-all ${
-                    selectedColor === color
+                  className={`w-9 h-9 rounded-full border-2 transition-all ${selectedColor === color
                       ? "border-blue-600 scale-110"
                       : "border-gray-300 hover:scale-105"
-                  }`}
+                    }`}
                   style={{ backgroundColor: color }}
                 />
               ))}
@@ -139,17 +138,29 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
           {/* 수량 */}
           <div className="flex justify-center items-center gap-5 mb-6">
-            <button onClick={() => setCount(prev => Math.max(1, prev -1))} className="px-4 py-2 bg-gray-400 rounded-lg hover:bg-gray-500 text-white">-</button>
+            <button
+              onClick={() => setCount(prev => Math.max(1, prev - 1))}
+              className="p-2 bg-gray-400 rounded-lg hover:bg-gray-500 text-white transition cursor-pointer"
+            >
+              <Minus size={16} />
+            </button>
+
             <span className="text-lg font-semibold text-gray-800">{count}</span>
-            <button onClick={() => setCount(prev => prev +1)} className="px-4 py-2 bg-gray-400 rounded-lg hover:bg-gray-500 text-white">+</button>
+
+            <button
+              onClick={() => setCount(prev => prev + 1)}
+              className="p-2 bg-gray-400 rounded-lg hover:bg-gray-500 text-white transition cursor-pointer"
+            >
+              <Plus size={16} />
+            </button>
           </div>
 
           {/* 좋아요 + 장바구니 */}
           <div className="flex items-center gap-4">
-            <button onClick={handleLike} className={`p-2 border rounded-lg transition-all duration-300 ${liked ? "bg-rose-50 border-rose-300 hover:bg-rose-100" : "bg-white border-gray-300 hover:shadow-md"}`} aria-label="좋아요">
+            <button onClick={handleLike} className={`p-2 border rounded-lg transition-all duration-300 hover: cursor-pointer ${liked ? "bg-rose-50 border-rose-300 hover:bg-rose-100" : "bg-white border-gray-300 hover:shadow-md"}`} aria-label="좋아요">
               <Heart className={`w-7 h-7 transition-all duration-300 ${liked ? "fill-rose-500 stroke-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.5)]" : "stroke-gray-400 hover:stroke-rose-400"}`} />
             </button>
-            <button onClick={handleAddToCart} className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">장바구니 담기</button>
+            <button onClick={handleAddToCart} className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition hover:cursor-pointer">장바구니 담기</button>
           </div>
         </div>
       </div>

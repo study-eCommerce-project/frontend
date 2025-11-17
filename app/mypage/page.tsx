@@ -7,7 +7,7 @@ export default function MyPage() {
   const { user } = useUser();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <div className="max-w-4xl mx-auto py-10 px-4">
         {/* 프로필 섹션 */}
         <div className="bg-white rounded-xl shadow p-6 mb-6">

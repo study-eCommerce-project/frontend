@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useCart } from "../../context/CartContext";
 import { Trash2, Plus, Minus } from "lucide-react";
 
@@ -11,7 +12,8 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-6">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* 🧺 장바구니 목록 */}
+        
+        {/* 장바구니 목록 */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow p-6 flex flex-col gap-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">장바구니</h1>
 
@@ -25,16 +27,17 @@ export default function CartPage() {
                 key={item.id}
                 className="flex flex-col md:flex-row items-center gap-4 border-b border-gray-200 pb-4"
               >
-                {/* 상품 이미지 */}
-                <div className="w-28 h-28 flex-shrink-0">
-                  <Image
-                    src={`/images/${item.thumbnailUrl}`}
-                    alt={item.productName}
-                    width={112}
-                    height={112}
-                    className="rounded-lg object-contain border"
-                  />
-                </div>
+                <Link href={`/product/${item.productId}`}>
+                  <div className="w-28 h-28 flex-shrink-0">
+                    <img
+                      src={item.thumbnailUrl || "/images/default_main.png"}
+                      alt={item.productName}
+                      width={112}
+                      height={112}
+                      className="rounded-lg object-contain border"
+                    />
+                  </div>
+                </Link>
 
                 {/* 상품 정보 */}
                 <div className="flex-1 flex flex-col justify-between h-full">
@@ -63,7 +66,9 @@ export default function CartPage() {
                       >
                         <Minus size={16} />
                       </button>
-                      <span className="w-6 text-center text-gray-800 font-medium">{item.count}</span>
+                      <span className="w-6 text-center text-gray-800 font-medium">
+                        {item.count}
+                      </span>
                       <button
                         onClick={() => updateCount(item.id, item.count + 1)}
                         className="p-1 bg-gray-400 rounded hover:bg-gray-500 transition cursor-pointer"
@@ -71,16 +76,15 @@ export default function CartPage() {
                         <Plus size={16} />
                       </button>
                     </div>
+
                     <div className="flex items-center gap-2">
-                      {/* 가격 */}
                       <p className="text-gray-900 font-bold">
                         {(item.price * item.count).toLocaleString()}원
                       </p>
 
-                      {/* 삭제 */}
                       <button
                         onClick={() => removeFromCart(item.id)}
-                        className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm  cursor-pointer"
+                        className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm cursor-pointer"
                       >
                         <Trash2 size={14} /> 삭제
                       </button>
@@ -92,7 +96,7 @@ export default function CartPage() {
           )}
         </div>
 
-        {/* 💳 결제 요약 */}
+        {/* 결제 요약 */}
         {cart.length > 0 && (
           <div className="bg-white rounded-xl shadow p-6 flex flex-col gap-6 h-fit sticky top-10">
             <h2 className="text-xl font-bold text-gray-900 mb-2">결제 정보</h2>

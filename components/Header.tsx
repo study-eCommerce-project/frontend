@@ -39,14 +39,14 @@ export default function Header() {
   return (
     <header
       ref={menuRef}
-      className="fixed top-0 left-0 w-full h-16 bg-gray-900 text-white px-6 shadow-md z-50 relative"
+      className="fixed top-0 left-0 w-full h-16 bg-gray-900 text-white px-6 shadow-md z-50"
     >
       {/* 내부 flex (헤더 높이를 정확히 맞추기 위해 header 바깥에서 flex 안 씀) */}
       <div className="h-full flex items-center">
 
         {/* 로고 - 왼쪽 */}
         <Link href="/" className="flex-shrink-0">
-          <img src="/images/logo.jpg" alt="Logo" className="h-10 w-auto" />
+          <img src="/images/logo.png" alt="Logo" className="h-10 w-auto" />
         </Link>
 
         {/* 오른쪽 로그인/회원가입/햄버거 */}
@@ -54,7 +54,7 @@ export default function Header() {
           <ul className="hidden md:flex items-center gap-2">
             <li className="min-w-0">
               {user ? (
-                <span className="px-3 py-1 truncate block max-w-[140px] sm:max-w-[200px] md:max-w-[250px] lg:max-w-full">
+                <span className="px-3 py-1 truncate block max-w-[140px] md:max-w-[100px] lg:max-w-full">
                   <b>{user.name}</b>님 환영합니다!
                 </span>
               ) : (
@@ -110,12 +110,12 @@ export default function Header() {
       {/* 검색창 - 헤더 정중앙 absolute */}
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm">
         <form onSubmit={handleSearch} className="relative w-full">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-black">
             <Search size={16} />
           </span>
           <input
             type="text"
-            placeholder="E-Commerce"
+            placeholder="Your Daily Journey"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             className="w-full px-10 py-2 bg-white text-black placeholder-gray-400 rounded-full text-center focus:outline-none"
@@ -125,7 +125,7 @@ export default function Header() {
 
       {/* 모바일 드롭다운 */}
       <div
-        className={`fixed right-4 top-16 w-44 bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden text-center z-40 transition-all duration-300
+        className={`absolute right-4 top-16 w-44 bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden text-center z-40 transition-all duration-300
         ${menuOpen ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-3 pointer-events-none"}`}
       >
         <Link href="/mypage" onClick={() => setMenuOpen(false)} className="block px-3 py-3 hover:bg-gray-700 transition">
