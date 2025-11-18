@@ -52,7 +52,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       }
       return;
     }
-    if (product.isoption === 1 && !selectedOption) {
+    if (product.isOption === 1 && !selectedOption) {
       alert("옵션을 선택해주세요!");
       return;
     }
@@ -117,7 +117,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             <p className="text-gray-600 mt-2 text-sm">재고: {product.stock}개</p>
           </div>
 
-          {product.isoption === 1 && (
+          {product.isOption &&  (
             <div className="mb-6">
               <label className="block text-gray-700 mb-2 font-medium">옵션 선택</label>
               <select
@@ -125,11 +125,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 onChange={(e) => setSelectedOption(e.target.value)}
                 className="text-black w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
-                <option value="">옵션을 선택하세요</option>
-                {product.options?.map((opt: string, idx: number) => (
-                  <option key={idx} value={opt}>{opt}</option>
-                ))}
-              </select>
+                {product.options?.map((opt : any) => (
+                        <option key={opt.optionId} value={opt.optionValue}>
+                            {opt.optionValue}
+                        </option>
+                    ))}
+                </select>
             </div>
           )}
 
