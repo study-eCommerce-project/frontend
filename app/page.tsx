@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -16,14 +17,17 @@ const banners = [
   "/images/banner3.jpg",
 ];
 
-export default function Home() {
+export default function Page() {
+  const [showIntro, setShowIntro] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentBanner, setCurrentBanner] = useState(0);
 
-  const handleDotClick = (index: number) => {
-    setCurrentBanner(index);
-  };
+  // Hook 순서 유지
+  useEffect(() => {
+    const timer = setTimeout(() => setShowIntro(false), 10000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     fetch("http://localhost:8080/api/products")
@@ -32,18 +36,59 @@ export default function Home() {
         setProducts(data);
         setLoading(false);
       })
-      .catch((err) => {
-        console.error("상품 데이터를 불러오지 못했습니다:", err);
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentBanner((prev) => (prev + 1) % banners.length);
-    }, 3000)
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  // Intro 화면
+  const goHome = () => setShowIntro(false);
+
+  const introLines = ["Your Daily", "Journey"];
+  const renderLine = (line: string, lineIdx: number) =>
+    line.split("").map((char, idx) => {
+      if (lineIdx === 1 && char.toLowerCase() === "o") {
+        return (
+          <img
+            key={idx}
+            src="/images/signature_b.png"
+            alt="O"
+            className="inline-block w-16 h-16 md:w-20 md:h-20 mx-[2px] -mb-2 animate-spin-slow"
+          />
+        );
+      }
+      return (
+        <span key={idx} className="inline-block mx-[1px]">
+          {char}
+        </span>
+      );
+    });
+
+  if (showIntro) {
+    return (
+      <div className="w-screen h-screen flex flex-col items-center justify-center">
+        {introLines.map((line, idx) => (
+          <h1
+            key={idx}
+            className="text-6xl md:text-8xl font-extrabold text-center leading-tight"
+          >
+            {renderLine(line, idx)}
+          </h1>
+        ))}
+        <button
+          onClick={goHome}
+          className="mt-10 px-8 py-4 bg-blue-600 text-white rounded-full text-xl font-semibold"
+        >
+          Start Now
+        </button>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -53,47 +98,40 @@ export default function Home() {
     );
   }
 
-  console.log("✅ p.mainImg 값 확인:", products.map(p => p.mainImg));
-
+  // Home 화면
   return (
-    <div className="min-h-screen justify-self-center">
-
+    <div className="min-h-screen flex flex-col items-center bg-gray-100">
       {/* 배너 슬라이더 */}
-      <div className="w-screen relative">
-        <div className="w-full pt-80 relative overflow-hidden">
-          {banners.map((banner, index) => (
-            <img
-              key={index}
-              src={banner}
-              alt={`배너 ${index + 1}`}
-              className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-700 ${index === currentBanner ? "opacity-100 z-10" : "opacity-0 z-0"
-                }`}
-            />
-          ))}
-        </div>
+      <div className="w-screen relative overflow-hidden h-[50vh]">
+        {banners.map((banner, index) => (
+          <img
+            key={index}
+            src={banner}
+            alt={`배너 ${index + 1}`}
+            className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-700 ${index === currentBanner ? "opacity-100 z-10" : "opacity-0 z-0"
+              }`}
+          />
+        ))}
 
         {/* 슬라이더 인디케이터 */}
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-3 z-20">
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-3 z-20">
           {banners.map((_, index) => (
             <button
               key={index}
-              onClick={() => handleDotClick(index)} // <--- 이 함수를 호출합니다!
-              className={`
-              w-2 h-2 rounded-full transition-colors duration-300 ease-in-out
-              ${index === currentBanner
+              onClick={() => setCurrentBanner(index)}
+              className={`w-2 h-2 rounded-full transition-colors duration-300 ease-in-out hover:cursor-pointer ${index === currentBanner
                   ? "bg-white shadow-md"
                   : "bg-white/50 hover:bg-white/80"
-                }
-            `}
+                }`}
             />
           ))}
         </div>
       </div>
 
-      {/* 상품 목록 */}
-      <div className="max-w-4xl mx-auto mt-8 px-4">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">상품 목록</h1>
-
+      <div className="w-full max-w-4xl mt-8 px-4">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+          상품 목록
+        </h1>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
           {products.map((p) => (
             <Link
@@ -106,7 +144,6 @@ export default function Home() {
                 alt={p.productName}
                 className="w-full h-40 object-contain mb-3"
               />
-
               <p className="text-gray-800 text-center text-sm font-medium mb-1 line-clamp-2 h-10">
                 {p.productName}
               </p>
@@ -120,6 +157,6 @@ export default function Home() {
           ))}
         </div>
       </div>
-    </div >
+    </div>
   );
 }

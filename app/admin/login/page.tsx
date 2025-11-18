@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "../../context/UserContext";
+import { useUser } from "../../../context/UserContext";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -53,7 +53,9 @@ export default function LoginPage() {
         onSubmit={handleLogin}
         className="w-full max-w-sm bg-white rounded-xl shadow-lg p-8 flex flex-col gap-5"
       >
-        <h2 className="text-2xl font-bold text-center text-gray-900">로그인</h2>
+        <h2 className="text-2xl font-bold text-center text-gray-900">
+          관리자 로그인
+        </h2>
 
         <input
           type="text"
@@ -80,13 +82,6 @@ export default function LoginPage() {
           로그인
         </button>
       </form>
-      <button
-        type="button"
-        onClick={() => router.push("/admin/login")}
-        className="mt-4 text-gray-600 rounded-lg font-semibold underline hover:text-gray-800 transition cursor-pointer"
-      >
-        관리자로 로그인
-      </button>
     </div>
   );
 }
