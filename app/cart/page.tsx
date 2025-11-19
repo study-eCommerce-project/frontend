@@ -1,13 +1,16 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "../../context/CartContext";
 import { Trash2, Plus, Minus } from "lucide-react";
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateCount } = useCart();
-  const totalPrice = cart.reduce((sum, item) => sum + item.price * item.count, 0);
+  const { cart, deleteItem, updateQuantity } = useCart();
+
+  const totalPrice = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
 
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-6">
@@ -24,13 +27,13 @@ export default function CartPage() {
           ) : (
             cart.map((item) => (
               <div
-                key={item.id}
+                key={item.cartId}
                 className="flex flex-col md:flex-row items-center gap-4 border-b border-gray-200 pb-4"
               >
                 <Link href={`/product/${item.productId}`}>
                   <div className="w-28 h-28 flex-shrink-0">
                     <img
-                      src={item.thumbnailUrl || "/images/default_main.png"}
+                      src={item.thumbnail || "/images/default_main.png"}
                       alt={item.productName}
                       width={112}
                       height={112}
@@ -45,32 +48,43 @@ export default function CartPage() {
                     <p className="text-lg font-semibold text-gray-800">
                       {item.productName}
                     </p>
+
+                    {/* 옵션 표시 */}
                     {item.option && (
                       <p className="text-gray-500 text-sm mt-1">
-                        옵션: {item.option}
+                        옵션: [{item.option.optionTitle}] {item.option.optionValue}
                       </p>
                     )}
-                    {item.color && (
-                      <p className="text-gray-500 text-sm">색상: {item.color}</p>
+
+                    {/* 품절 표시 */}
+                    {item.soldOut && (
+                      <p className="text-red-500 text-sm font-semibold mt-1">
+                        품절된 상품입니다
+                      </p>
                     )}
                   </div>
 
                   <div className="flex items-center justify-between mt-3">
+                    
                     {/* 수량 조절 */}
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() =>
-                          updateCount(item.id, Math.max(1, item.count - 1))
+                          updateQuantity(item.cartId, Math.max(1, item.quantity - 1))
                         }
                         className="p-1 bg-gray-400 rounded hover:bg-gray-500 transition cursor-pointer"
                       >
                         <Minus size={16} />
                       </button>
+
                       <span className="w-6 text-center text-gray-800 font-medium">
-                        {item.count}
+                        {item.quantity}
                       </span>
+
                       <button
-                        onClick={() => updateCount(item.id, item.count + 1)}
+                        onClick={() =>
+                          updateQuantity(item.cartId, item.quantity + 1)
+                        }
                         className="p-1 bg-gray-400 rounded hover:bg-gray-500 transition cursor-pointer"
                       >
                         <Plus size={16} />
@@ -79,11 +93,11 @@ export default function CartPage() {
 
                     <div className="flex items-center gap-2">
                       <p className="text-gray-900 font-bold">
-                        {(item.price * item.count).toLocaleString()}원
+                        {(item.price * item.quantity).toLocaleString()}원
                       </p>
 
                       <button
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => deleteItem(item.cartId)}
                         className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm cursor-pointer"
                       >
                         <Trash2 size={14} /> 삭제
