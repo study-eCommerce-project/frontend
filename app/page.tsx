@@ -24,7 +24,7 @@ export default function Page() {
 
 
   useEffect(() => {
-    const seen = localStorage.getItem("introSeen");
+    const seen = sessionStorage.getItem("introSeen");
 
     if (seen !== "true") {
       window.location.href = "/intro";

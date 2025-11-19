@@ -8,23 +8,18 @@ export default function IntroPage() {
 
   // 처음 방문 체크
   useEffect(() => {
-    const seen = localStorage.getItem("introSeen");
+    const seen = sessionStorage.getItem("introSeen");
 
     if (seen === "true") {
-      
-      const timer = setTimeout(() => {
-        window.location.href = "/";
-      }, 100); 
-
-      return () => clearTimeout(timer);
+      window.location.href = "/";
+      return;
     }
-
 
     setMounted(true);
 
     // 자동 이동 (3초 후)
     const timer = setTimeout(() => {
-      localStorage.setItem("introSeen", "true");
+      sessionStorage.setItem("introSeen", "true");
       window.location.href = "/";
     }, 3000);
 
@@ -32,7 +27,7 @@ export default function IntroPage() {
   }, []);
 
   const goHome = () => {
-    localStorage.setItem("introSeen", "true");
+    sessionStorage.setItem("introSeen", "true");
     window.location.href = "/";
   };
 
