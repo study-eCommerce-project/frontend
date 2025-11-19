@@ -87,8 +87,8 @@ export default function Page() {
               key={index}
               onClick={() => setCurrentBanner(index)}
               className={`w-2 h-2 rounded-full transition-colors duration-300 ease-in-out hover:cursor-pointer ${index === currentBanner
-                  ? "bg-white shadow-md"
-                  : "bg-white/50 hover:bg-white/80"
+                ? "bg-white shadow-md"
+                : "bg-white/50 hover:bg-white/80"
                 }`}
             />
           ))}
