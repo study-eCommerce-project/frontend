@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 interface Product {
   productId: number;
@@ -14,10 +14,11 @@ interface Product {
 export default function AdminPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState(""); // 검색어 상태
 
   // 페이징 상태
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5; // 한 페이지에 5개 표시
+  const pageSize = 5;
 
   // 상품 불러오기
   useEffect(() => {
@@ -41,14 +42,34 @@ export default function AdminPage() {
     );
   }
 
+  // 검색어로 필터링
+  const filteredProducts = products.filter((p) =>
+    p.productName.toLowerCase().includes(search.toLowerCase())
+  );
+
   // 현재 페이지 데이터 계산
-  const totalPages = Math.ceil(products.length / pageSize);
+  const totalPages = Math.ceil(filteredProducts.length / pageSize);
   const startIdx = (currentPage - 1) * pageSize;
-  const currentProducts = products.slice(startIdx, startIdx + pageSize);
+  const currentProducts = filteredProducts.slice(startIdx, startIdx + pageSize);
 
   return (
     <div className="min-h-screen p-8 bg-gray-100">
       <h1 className="text-3xl font-bold mb-6">상품 리스트</h1>
+
+      {/* 검색창 */}
+      <div className="mb-4 relative w-full md:w-1/3">
+        <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <input
+          type="text"
+          placeholder="상품명 검색..."
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1); // 검색 시 페이지 초기화
+          }}
+          className="w-full pl-10 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+      </div>
 
       {/* 상품 목록 */}
       <div className="bg-white p-6 rounded-lg shadow">
@@ -104,9 +125,7 @@ export default function AdminPage() {
             <button
               key={page}
               onClick={() => setCurrentPage(page)}
-              className={`px-3 py-1 border rounded transition cursor-pointer ${currentPage === page
-                ? "bg-black text-white border-black"
-                : "hover:bg-gray-100"
+              className={`px-3 py-1 border rounded transition cursor-pointer ${currentPage === page ? "bg-black text-white border-black" : "hover:bg-gray-100"
                 }`}
             >
               {page}

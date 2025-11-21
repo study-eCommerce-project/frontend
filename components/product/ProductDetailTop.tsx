@@ -68,7 +68,7 @@ export default function ProductDetailTop({ product }: { product: Product }) {
     localStorage.setItem("likedProducts", JSON.stringify(updated));
   };
 
-  // ------------------- 커스텀 드롭다운 -------------------
+  // 커스텀 드롭다운
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -91,7 +91,6 @@ export default function ProductDetailTop({ product }: { product: Product }) {
     setSelectedOptions((prev) => [...prev, { ...opt, count: 1 }]);
     setDropdownOpen(false);
   };
-  // ------------------------------------------------------
 
   const handleAddToCart = () => {
     if (!user) {
@@ -136,7 +135,7 @@ export default function ProductDetailTop({ product }: { product: Product }) {
                 key={idx}
                 src={thumb}
                 alt={`썸네일 ${idx}`}
-                className={`w-20 h-20 object-contain rounded border ${mainImage === thumb ? "border-blue-600" : "border-gray-300"
+                className={`w-20 h-20 object-contain rounded border ${mainImage === thumb ? "border-gray-800" : "border-gray-300"
                   } hover:cursor-pointer`}
                 onClick={() => setMainImage(thumb)}
               />
@@ -159,13 +158,18 @@ export default function ProductDetailTop({ product }: { product: Product }) {
 
           <div className="mb-6 text-center md:text-left">
             <p className="text-gray-400 text-sm line-through">{product.consumerPrice?.toLocaleString()}원</p>
-            <p className="text-3xl font-bold text-blue-600">{product.sellPrice?.toLocaleString()}원</p>
+            {product.consumerPrice && product.sellPrice && product.consumerPrice > product.sellPrice && (
+              <span className="text-red-500 text-3xl font-bold">
+                {Math.round(((product.consumerPrice - product.sellPrice) / product.consumerPrice) * 100)}%
+              </span>
+            )}
+            <p className="text-3xl font-bold text-black">{product.sellPrice?.toLocaleString()}원</p>
             <p className="text-gray-600 mt-2 text-sm">재고: {product.stock}개</p>
           </div>
 
           {/* 커스텀 드롭다운 */}
           {product.isOption && product.options?.length ? (
-            <div className="mb-6 relative" ref={dropdownRef}>
+            <div className="mb-6 relative w-full" ref={dropdownRef}>
               <label className="block text-gray-700 mb-2 font-medium">옵션 선택</label>
               <button
                 onClick={() => setDropdownOpen((prev) => !prev)}
@@ -179,11 +183,8 @@ export default function ProductDetailTop({ product }: { product: Product }) {
                   {product.options.map((opt) => (
                     <li
                       key={opt.optionId}
-                      onClick={() =>
-                        handleSelectOption({ optionId: opt.optionId, value: opt.optionValue })
-                      }
-                      className={`p-2 hover:bg-blue-100 hover:cursor-pointer ${selectedOptions.find((o) => o.optionId === opt.optionId) ? "bg-gray-200" : ""
-                        }`}
+                      onClick={() => handleSelectOption({ optionId: opt.optionId, value: opt.optionValue })}
+                      className={`p-2 hover:bg-blue-100 hover:cursor-pointer ${selectedOptions.find((o) => o.optionId === opt.optionId) ? "bg-gray-200" : ""}`}
                     >
                       {opt.optionValue}
                     </li>
@@ -194,10 +195,10 @@ export default function ProductDetailTop({ product }: { product: Product }) {
           ) : null}
 
           {/* 선택된 옵션 카드 */}
-          <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col gap-4 mb-6 w-full">
             {selectedOptions.map((item) => (
-              <div key={item.optionId} className="border p-4 rounded-lg shadow-sm flex justify-between items-center">
-                <div>
+              <div key={item.optionId} className="border p-4 rounded-lg shadow-sm flex justify-between items-center w-full">
+                <div className="flex-1">
                   <p className="font-medium">{item.value}</p>
                   <div className="flex items-center gap-3 mt-2">
                     <button
@@ -230,10 +231,8 @@ export default function ProductDetailTop({ product }: { product: Product }) {
                   </div>
                 </div>
                 <button
-                  onClick={() =>
-                    setSelectedOptions((prev) => prev.filter((p) => p.optionId !== item.optionId))
-                  }
-                  className="text-gray-400 hover:text-black hover:cursor-pointer"
+                  onClick={() => setSelectedOptions((prev) => prev.filter((p) => p.optionId !== item.optionId))}
+                  className="text-gray-400 hover:text-black hover:cursor-pointer ml-4"
                 >
                   <X size={20} />
                 </button>
@@ -245,20 +244,24 @@ export default function ProductDetailTop({ product }: { product: Product }) {
           <div className="flex flex-col md:flex-row items-center gap-4 w-full">
             <button
               onClick={handleLike}
-              className={`p-2 border rounded-lg transition-all ${liked ? "bg-rose-50 border-rose-300" : "bg-white border-gray-300"
-                } hover:cursor-pointer`}
+              className={`p-2 border rounded-lg transition-all w-full md:w-auto ${liked ? "bg-rose-50 border-rose-300" : "bg-white border-gray-300"} hover:cursor-pointer`}
             >
               <Heart
-                className={`w-7 h-7 ${liked ? "fill-rose-500 stroke-rose-500" : "stroke-gray-400"
-                  }`}
+                className={`w-7 h-7 ${liked ? "fill-rose-500 stroke-rose-500" : "stroke-gray-400"}`}
               />
             </button>
 
             <button
               onClick={handleAddToCart}
-              className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 hover:cursor-pointer"
+              className="flex-1 w-full bg-gray-100 text-gray-600 py-3 rounded-lg hover:bg-gray-200 hover:cursor-pointer"
             >
-              장바구니 담기
+              장바구니
+            </button>
+            <button
+              onClick={handleLike}
+              className="flex-1 w-full bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-800 hover:cursor-pointer"
+            >
+              구매하기
             </button>
           </div>
         </div>
