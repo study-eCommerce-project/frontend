@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "../context/UserContext";
 import { Search } from "lucide-react";
@@ -51,12 +51,12 @@ export default function Header() {
           </form>
         </div>
 
-        {/* 🔥 로그인 / 회원가입 UI 추가 */}
+        {/* 로그인 / 회원가입 */}
         <div className="ml-auto flex items-center gap-4 mr-3 text-sm">
           {user ? (
             <>
               {user && (
-                <Link href="/admin/productList" className="hover:text-gray-300">
+                <Link href="/admin" className="hover:text-gray-300">
                   상품 관리
                 </Link>
               )}

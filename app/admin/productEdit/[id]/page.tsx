@@ -13,6 +13,11 @@ interface Product {
   stock: number;
 }
 
+interface ProductOption {
+  name: string;
+  stock: number;
+}
+
 export default function ProductEditPage() {
   const router = useRouter();
   const params = useParams();
@@ -82,7 +87,7 @@ export default function ProductEditPage() {
               <img
                 src={product.mainImg}
                 alt={product.productName}
-                className="w-full md:w-96 h-96 object-contain rounded-lg border mb-4"
+                className="w-full md:w-full object-contain rounded-lg border mb-4"
               />
             )}
             <input

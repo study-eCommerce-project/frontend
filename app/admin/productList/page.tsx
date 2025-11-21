@@ -17,7 +17,7 @@ export default function AdminPage() {
 
   // 페이징 상태
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5; // 한 페이지에 10개 표시
+  const pageSize = 5; // 한 페이지에 5개 표시
 
   // 상품 불러오기
   useEffect(() => {
@@ -105,8 +105,8 @@ export default function AdminPage() {
               key={page}
               onClick={() => setCurrentPage(page)}
               className={`px-3 py-1 border rounded transition cursor-pointer ${currentPage === page
-                  ? "bg-black text-white border-black"
-                  : "hover:bg-gray-100"
+                ? "bg-black text-white border-black"
+                : "hover:bg-gray-100"
                 }`}
             >
               {page}

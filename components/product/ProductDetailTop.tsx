@@ -44,8 +44,8 @@ export default function ProductDetailTop({ product }: { product: Product }) {
   const thumbnails: string[] = product.subImages?.length
     ? product.subImages
     : product.mainImg
-    ? [product.mainImg]
-    : [];
+      ? [product.mainImg]
+      : [];
 
   // 좋아요 초기화
   useEffect(() => {
@@ -125,18 +125,19 @@ export default function ProductDetailTop({ product }: { product: Product }) {
   };
 
   return (
-    <div className="max-w-6xl my-auto bg-white p-8 rounded-xl shadow">
+    <div className="max-w-6xl mx-auto my-10 bg-white p-8 rounded-xl shadow flex flex-col">
       <div className="grid md:grid-cols-2 gap-10 items-start">
 
-        {/* 이미지 */}
-        <div ref={detailRef} className="flex flex-row gap-6">
+        {/* 이미지 영역 */}
+        <div ref={detailRef} className="flex flex-row gap-6 justify-center">
           <div className="flex flex-col gap-2 overflow-y-auto max-h-[500px] min-w-[5rem]">
             {thumbnails.map((thumb, idx) => (
               <img
                 key={idx}
                 src={thumb}
                 alt={`썸네일 ${idx}`}
-                className={`w-20 h-20 object-contain rounded border ${mainImage === thumb ? "border-blue-600" : "border-gray-300"} hover:cursor-pointer`}
+                className={`w-20 h-20 object-contain rounded border ${mainImage === thumb ? "border-blue-600" : "border-gray-300"
+                  } hover:cursor-pointer`}
                 onClick={() => setMainImage(thumb)}
               />
             ))}
@@ -151,18 +152,18 @@ export default function ProductDetailTop({ product }: { product: Product }) {
           </div>
         </div>
 
-        {/* 상품 정보 */}
-        <div className="flex flex-col">
+        {/* 상품 정보 영역 */}
+        <div className="flex flex-col items-center md:items-start text-center md:text-left">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.productName}</h1>
-          <p className="text-gray-700 mb-6">{product.description || "설명이 없습니다."}</p>
+          <p className="text-gray-700 mb-6 max-w-md">{product.description || "설명이 없습니다."}</p>
 
-          <div className="mb-6">
+          <div className="mb-6 text-center md:text-left">
             <p className="text-gray-400 text-sm line-through">{product.consumerPrice?.toLocaleString()}원</p>
             <p className="text-3xl font-bold text-blue-600">{product.sellPrice?.toLocaleString()}원</p>
             <p className="text-gray-600 mt-2 text-sm">재고: {product.stock}개</p>
           </div>
 
-          {/* ------------------- 커스텀 드롭다운 ------------------- */}
+          {/* 커스텀 드롭다운 */}
           {product.isOption && product.options?.length ? (
             <div className="mb-6 relative" ref={dropdownRef}>
               <label className="block text-gray-700 mb-2 font-medium">옵션 선택</label>
@@ -181,9 +182,8 @@ export default function ProductDetailTop({ product }: { product: Product }) {
                       onClick={() =>
                         handleSelectOption({ optionId: opt.optionId, value: opt.optionValue })
                       }
-                      className={`p-2 hover:bg-blue-100 hover:cursor-pointer ${
-                        selectedOptions.find((o) => o.optionId === opt.optionId) ? "bg-gray-200" : ""
-                      }`}
+                      className={`p-2 hover:bg-blue-100 hover:cursor-pointer ${selectedOptions.find((o) => o.optionId === opt.optionId) ? "bg-gray-200" : ""
+                        }`}
                     >
                       {opt.optionValue}
                     </li>
@@ -192,7 +192,6 @@ export default function ProductDetailTop({ product }: { product: Product }) {
               )}
             </div>
           ) : null}
-          {/* ------------------------------------------------------ */}
 
           {/* 선택된 옵션 카드 */}
           <div className="flex flex-col gap-4 mb-6">
@@ -243,17 +242,15 @@ export default function ProductDetailTop({ product }: { product: Product }) {
           </div>
 
           {/* 버튼 */}
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col md:flex-row items-center gap-4 w-full">
             <button
               onClick={handleLike}
-              className={`p-2 border rounded-lg transition-all ${
-                liked ? "bg-rose-50 border-rose-300" : "bg-white border-gray-300"
-              } hover:cursor-pointer`}
+              className={`p-2 border rounded-lg transition-all ${liked ? "bg-rose-50 border-rose-300" : "bg-white border-gray-300"
+                } hover:cursor-pointer`}
             >
               <Heart
-                className={`w-7 h-7 ${
-                  liked ? "fill-rose-500 stroke-rose-500" : "stroke-gray-400"
-                }`}
+                className={`w-7 h-7 ${liked ? "fill-rose-500 stroke-rose-500" : "stroke-gray-400"
+                  }`}
               />
             </button>
 

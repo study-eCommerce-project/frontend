@@ -81,30 +81,36 @@ export default function Page() {
       </div>
 
       {/* 상품 목록 */}
-      <div className="w-full max-w-4xl mt-8 mx-auto px-4">
+      <div className="w-full max-w-6xl mt-24 mx-auto px-4">
         <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
           상품 목록
         </h1>
 
+        {/* 카드 간격 추가 */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
           {products.map((p) => (
             <Link
               key={p.productId}
               href={`/product/${p.productId}`}
-              className="bg-white rounded-xl shadow hover:shadow-lg transition p-4 flex flex-col items-center cursor-pointer"
+              className="text-center bg-white rounded-2xl shadow hover:shadow-xl transition flex flex-col cursor-pointer overflow-hidden"
             >
-              <img
-                src={p.mainImg || "/images/default_main.png"}
-                alt={p.productName}
-                className="w-full h-40 object-contain mb-3"
-              />
-              <p className="text-gray-800 text-center text-sm font-medium mb-1 line-clamp-2 h-10">
+              <div className="w-full rounded-xl overflow-hidden flex items-center justify-center bg-white">
+                <img
+                  src={p.mainImg || "/images/default_main.png"}
+                  alt={p.productName}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+
+              <p className="text-gray-800 text-center text-base font-medium mt-3 mb-1 line-clamp-2 h-12">
                 {p.productName}
               </p>
-              <p className="text-gray-500 text-xs line-through">
+
+              <p className="text-gray-500 text-sm line-through">
                 {p.consumerPrice.toLocaleString()}원
               </p>
-              <p className="text-blue-600 font-bold mt-1">
+
+              <p className="text-blue-600 font-bold mt-1 text-lg">
                 {p.sellPrice.toLocaleString()}원
               </p>
             </Link>
