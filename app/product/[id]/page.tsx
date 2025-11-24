@@ -1,12 +1,14 @@
 import ProductDetailClient from "./ProductDetailClient";
 
-export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  // ✅ Next.js 16부터 params는 Promise 형태임
-  const { id } = await params;
+export default async function ProductPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const { id } = params;
 
-  // Spring Boot API 호출 (SSR)
   const res = await fetch(`http://localhost:8080/api/products/${id}`, {
-    cache: "no-store", // 항상 최신 데이터
+    cache: "no-store",
   });
 
   if (!res.ok) {
