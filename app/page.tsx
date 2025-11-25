@@ -22,6 +22,8 @@ interface MainCategory {
 }
 
 export default function Page() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,6 +54,7 @@ export default function Page() {
 
   // 2) 대분류만 불러오기
   useEffect(() => {
+<<<<<<< HEAD
     fetch("http://localhost:8080/api/categories/main")
       .then((res) => res.text())
       .then((text) => {
@@ -64,11 +67,17 @@ export default function Page() {
           console.error("❌ JSON 파싱 불가 → HTML 응답임");
         }
       });
+=======
+    fetch(`${API_URL}/api/categories/main`)
+      .then((res) => res.json())
+      .then((data) => setMainCategories(data))
+      .catch(console.error);
+>>>>>>> main
   }, []);
 
   // 3) 전체 트리 불러오기
   useEffect(() => {
-    fetch("http://localhost:8080/api/categories/tree")
+    fetch(`${API_URL}/api/categories/tree`)
       .then((res) => res.json())
       .then((data) => setCategoryTree(data.tree))
       .catch(console.error);
@@ -76,7 +85,7 @@ export default function Page() {
 
   // 4) 전체 상품 불러오기
   useEffect(() => {
-    fetch("http://localhost:8080/api/products")
+    fetch(`${API_URL}/api/products`)
       .then((res) => res.json())
       .then((data: Product[]) => {
         setProducts(data);

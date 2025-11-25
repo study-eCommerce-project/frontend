@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+<<<<<<< HEAD
 import Category from "../../components/category";
+=======
+import CategoryTreeAccordion from "./components/CategoryTreeAccordion";
+>>>>>>> main
 
 interface Product {
   productId: number;
@@ -13,6 +17,7 @@ interface Product {
 }
 
 export default function AdminMainPage() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const router = useRouter();
 
   const [selectedLeaf, setSelectedLeaf] = useState<string | null>(null);
@@ -23,7 +28,7 @@ export default function AdminMainPage() {
   // 카테고리 트리 로드
   useEffect(() => {
     async function loadTree() {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories/tree`);
+      const res = await fetch(`${API_URL}/api/categories/tree`);
       const data = await res.json();
       setCategoryTree(data.tree);
     }
@@ -42,7 +47,7 @@ export default function AdminMainPage() {
       setLoading(true);
       try {
         const res = await fetch(
-          `http://localhost:8080/api/products?category=${selectedLeaf}`
+          `${API_URL}/api/products?category=${selectedLeaf}`
         );
         const data = await res.json();
         setProducts(data);
@@ -61,15 +66,15 @@ export default function AdminMainPage() {
       {/* 🔵 왼쪽 카테고리 트리 */}
       <div className="w-72">
         {categoryTree ? (
-          <Category
+          <CategoryTreeAccordion
             data={categoryTree}
             onSelect={(leafCode) => setSelectedLeaf(leafCode)}
           />
-
         ) : (
           <p>카테고리 불러오는 중...</p>
         )}
       </div>
+
 
       {/* 🟣 오른쪽 상품 리스트 */}
       <div className="flex-1 bg-white rounded-xl shadow p-4">

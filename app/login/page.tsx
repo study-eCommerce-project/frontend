@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useUser } from "../../context/UserContext";
 
 export default function LoginPage() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
   const router = useRouter();
   const { refreshUser } = useUser();
 
@@ -20,7 +22,7 @@ export default function LoginPage() {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include", // ⭐ 세션 쿠키 받기
@@ -44,7 +46,7 @@ export default function LoginPage() {
       await refreshUser(); // ⭐ 서버에서 세션 기반 user 정보 다시 가져오기
 
       // role은 UserContext 안에 있음
-      const meRes = await fetch("http://localhost:8080/api/auth/me", {
+      const meRes = await fetch(`${API_URL}/api/auth/me`, {
         credentials: "include",
       });
       const me = await meRes.json();

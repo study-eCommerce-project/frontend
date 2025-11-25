@@ -19,6 +19,8 @@ interface ProductOption {
 }
 
 export default function ProductEditPage() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
   const router = useRouter();
   const params = useParams();
   const id = params.id;
@@ -29,7 +31,7 @@ export default function ProductEditPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/products/${id}`);
+        const res = await fetch(`${API_URL}/api/products/${id}`);
         if (!res.ok) throw new Error("상품을 불러오는 중 오류 발생");
         const data: Product = await res.json();
         setProduct(data);
@@ -61,7 +63,7 @@ export default function ProductEditPage() {
 
   const handleSave = async () => {
     try {
-      const res = await fetch(`http://localhost:8080/api/products/${product.productId}`, {
+      const res = await fetch(`${API_URL}/api/products/${product.productId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(product),

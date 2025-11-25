@@ -11,6 +11,8 @@ interface SidebarContentProps {
 }
 
 export default function SidebarContent({ user, onClose }: SidebarContentProps) {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
   const [search, setSearch] = useState("");
   const [tree, setTree] = useState<any>(null);
   const [open, setOpen] = useState<{ [key: string]: boolean }>({});
@@ -19,7 +21,7 @@ export default function SidebarContent({ user, onClose }: SidebarContentProps) {
   /** 카테고리 트리 불러오기 */
   useEffect(() => {
     async function loadTree() {
-      const res = await fetch("http://localhost:8080/api/categories/tree");
+      const res = await fetch(`${API_URL}/api/categories/tree`);
       const data = await res.json();
       setTree(data.tree);
     }

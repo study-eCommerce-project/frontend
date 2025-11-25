@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Signup() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -46,7 +48,7 @@ export default function Signup() {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/api/signup", {
+      const response = await fetch(`${API_URL}/api/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

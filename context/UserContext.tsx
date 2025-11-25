@@ -28,6 +28,8 @@ const UserContext = createContext<UserContextType>({
 });
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
   const [user, setUserState] = useState<User | null>(null);
 
   /** User 상태 업데이트 (로컬스토리지 금지) */
@@ -38,7 +40,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   /** 세션 기반 로그인 복원 */
   const refreshUser = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/auth/me", {
+      const res = await fetch(`${API_URL}/api/auth/me`, {
         credentials: "include",
       });
 

@@ -19,6 +19,8 @@ const toFullUrl = (url: string) => {
 };
 
 export default function CategoryPage({ params }: { params: Promise<{ leafCode: string }> }) {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  
   const router = useRouter();
   const { leafCode } = use(params); // ⭐ params 언랩
 
@@ -32,7 +34,7 @@ export default function CategoryPage({ params }: { params: Promise<{ leafCode: s
       setLoading(true);
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/products/category/${leafCode}`
+          `${API_URL}/api/products/category/${leafCode}`
         );
 
         const data = await res.json();

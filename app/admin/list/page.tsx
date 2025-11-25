@@ -13,6 +13,8 @@ interface Product {
 }
 
 export default function AdminListPage() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +22,7 @@ export default function AdminListPage() {
 
   // 상품 불러오기
   useEffect(() => {
-    fetch("http://localhost:8080/api/products")
+    fetch(`${API_URL}/api/products`)
       .then((res) => res.json())
       .then((data) => {
         setProducts(data);

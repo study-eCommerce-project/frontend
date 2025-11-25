@@ -13,6 +13,8 @@ interface Product {
 }
 
 export default function ProductCreatePage() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  
   const router = useRouter();
 
   const [product, setProduct] = useState<Product>({
@@ -32,7 +34,7 @@ export default function ProductCreatePage() {
 
   const handleSave = async () => {
     try {
-      const res = await fetch(`http://localhost:8080/api/products`, {
+      const res = await fetch(`${API_URL}/api/products`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(product),
