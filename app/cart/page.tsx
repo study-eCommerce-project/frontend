@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useCart } from "../../context/CartContext";
+import { useCart } from "@/context/CartContext";
 import { Trash2, Plus, Minus } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function CartPage() {
+  const router = useRouter();
+  
   const { cart, deleteItem, updateQuantity } = useCart();
 
   const totalPrice = cart.reduce(
@@ -15,7 +18,7 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-6">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* 장바구니 목록 */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow p-6 flex flex-col gap-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">장바구니</h1>
@@ -65,7 +68,7 @@ export default function CartPage() {
                   </div>
 
                   <div className="flex items-center justify-between mt-3">
-                    
+
                     {/* 수량 조절 */}
                     <div className="flex items-center gap-2">
                       <button
@@ -130,7 +133,10 @@ export default function CartPage() {
               </div>
             </div>
 
-            <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-semibold transition cursor-pointer">
+            <button
+              onClick={() => router.push("/checkout")}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-semibold transition cursor-pointer"
+            >
               {totalPrice.toLocaleString()}원 결제하기
             </button>
           </div>

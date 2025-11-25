@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CATEGORY_TREE } from "./lib/categories";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
@@ -14,37 +13,60 @@ interface Product {
   consumerPrice: number;
   sellPrice: number;
   mainImg: string;
-  categoryCode: string; // 소분류 코드
+  categoryCode: string;
 }
 
-// 대분류만 추출
-const mainCategories = Object.entries(CATEGORY_TREE).map(([code, data]) => ({
-  code,
-  title: data.title,
-}));
-
-const bannerImages = ["/images/banner1.png", "/images/banner2.png", "/images/banner3.png"];
-
-const truncate = (text: string, max = 10) =>
-  text.length > max ? text.slice(0, max) + "..." : text;
+interface MainCategory {
+  code: string;
+  title: string;
+}
 
 export default function Page() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
+
+  // 카테고리 상태
+  const [mainCategories, setMainCategories] = useState<MainCategory[]>([]);
+  const [categoryTree, setCategoryTree] = useState<any>(null);
+
   const [selectedMain, setSelectedMain] = useState<string | null>(null);
+
+  // 페이징
+  const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 8;
 
+  const bannerImages = [
+    "/images/banner1.png",
+    "/images/banner2.png",
+    "/images/banner3.png",
+  ];
 
+  const truncate = (text: string, max = 15) =>
+    text.length > max ? text.slice(0, max) + "..." : text;
+
+  // 1) 인트로 확인
   useEffect(() => {
     const seen = sessionStorage.getItem("introSeen");
-
-    if (seen !== "true") {
-      window.location.href = "/intro";
-    }
+    if (seen !== "true") window.location.href = "/intro";
   }, []);
 
-  // 3) 상품 불러오기
+  // 2) 대분류만 불러오기
+  useEffect(() => {
+    fetch("http://localhost:8080/api/categories/main")
+      .then((res) => res.json())
+      .then((data) => setMainCategories(data))
+      .catch(console.error);
+  }, []);
+
+  // 3) 전체 트리 불러오기
+  useEffect(() => {
+    fetch("http://localhost:8080/api/categories/tree")
+      .then((res) => res.json())
+      .then((data) => setCategoryTree(data.tree))
+      .catch(console.error);
+  }, []);
+
+  // 4) 전체 상품 불러오기
   useEffect(() => {
     fetch("http://localhost:8080/api/products")
       .then((res) => res.json())
@@ -55,17 +77,22 @@ export default function Page() {
       .catch(() => setLoading(false));
   }, []);
 
-  // 선택된 대분류에 속한 상품만 필터링
-  const filteredProducts = selectedMain
-    ? products.filter((p) => {
-      const mainChildren = CATEGORY_TREE[selectedMain].children;
-      const allLeafCodes = Object.values(mainChildren).flatMap((sub) =>
-        Object.keys(sub.children)
-      );
-      return allLeafCodes.includes(p.categoryCode);
-    })
-    : products;
+  // 5) 대분류 선택하여 필터링
+  const filteredProducts =
+    selectedMain && categoryTree
+      ? (() => {
+          const midList = categoryTree[selectedMain].children;
 
+          // mid → leaf 목록 전체 수집
+          const leafCodes = Object.values(midList).flatMap(
+            (mid: any) => Object.keys(mid.children)
+          );
+
+          return products.filter((p) => leafCodes.includes(p.categoryCode));
+        })()
+      : products;
+
+  // 6) 페이징 계산
   const totalPages = Math.ceil(filteredProducts.length / pageSize);
   const startIdx = (currentPage - 1) * pageSize;
   const currentProducts = filteredProducts.slice(startIdx, startIdx + pageSize);
@@ -77,18 +104,25 @@ export default function Page() {
         modules={[Autoplay]}
         loop
         autoplay={{ delay: 5000, disableOnInteraction: false }}
-        className="w-full h-full"
+        className="w-full h-[45vh] sm:h-[55vh] md:h-[65vh]"
       >
         {bannerImages.map((src, idx) => (
           <SwiperSlide key={idx}>
-            <img src={src} alt={`banner-${idx}`} className="w-full h-full object-cover" draggable={false} />
+            <img
+              src={src}
+              alt={`banner-${idx}`}
+              className="w-full h-full object-cover"
+              draggable={false}
+            />
           </SwiperSlide>
         ))}
       </Swiper>
 
       {/* 상품 목록 */}
       <div className="w-full max-w-6xl mt-24 mx-auto px-4">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">상품 목록</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+          상품 목록
+        </h1>
 
         {/* 대분류 메뉴 */}
         <div className="flex gap-4 justify-center mb-8">
@@ -97,10 +131,15 @@ export default function Page() {
               setSelectedMain(null);
               setCurrentPage(1);
             }}
-            className={`px-4 py-2 rounded-full border transition cursor-pointer ${!selectedMain ? "bg-black text-white border-black" : "hover:bg-gray-100"}`}
+            className={`px-4 py-2 rounded-full border transition cursor-pointer ${
+              !selectedMain
+                ? "bg-black text-white border-black"
+                : "hover:bg-gray-100"
+            }`}
           >
             전체보기
           </button>
+
           {mainCategories.map((cat) => (
             <button
               key={cat.code}
@@ -108,7 +147,11 @@ export default function Page() {
                 setSelectedMain(cat.code);
                 setCurrentPage(1);
               }}
-              className={`px-4 py-2 rounded-full border transition cursor-pointer ${selectedMain === cat.code ? "bg-black text-white border-black" : "hover:bg-gray-100"}`}
+              className={`px-4 py-2 rounded-full border transition cursor-pointer ${
+                selectedMain === cat.code
+                  ? "bg-black text-white border-black"
+                  : "hover:bg-gray-100"
+              }`}
             >
               {cat.title}
             </button>
@@ -116,8 +159,7 @@ export default function Page() {
         </div>
 
         {/* 상품 grid */}
-        {loading ? (
-          // ★ 로딩 화면 ★
+        {loading || !categoryTree ? (
           <div className="w-full flex flex-col items-center justify-center py-10">
             <p className="text-gray-700 mb-3">상품 불러오는 중...</p>
             <img
@@ -127,7 +169,6 @@ export default function Page() {
             />
           </div>
         ) : currentProducts.length === 0 ? (
-          // ★ 상품 없음 화면 ★
           <div className="w-full flex flex-col items-center justify-center py-20">
             <p className="text-gray-500">등록된 상품이 없습니다.</p>
           </div>
@@ -140,19 +181,34 @@ export default function Page() {
                 className="text-center bg-white rounded-2xl shadow hover:shadow-xl transition flex flex-col cursor-pointer overflow-hidden"
               >
                 <div className="w-full rounded-xl overflow-hidden flex items-center justify-center bg-white">
-                  <img src={p.mainImg || "/images/default_main.png"} alt={p.productName} className="w-full h-full object-contain" />
+                  <img
+                    src={p.mainImg || "/images/default_main.png"}
+                    alt={p.productName}
+                    className="w-full h-full object-contain"
+                  />
                 </div>
 
                 <p className="text-gray-800 text-center text-base font-medium mt-3 mb-1">
-                  {truncate(p.productName, 15)}
+                  {truncate(p.productName)}
                 </p>
 
-                <p className="text-gray-500 text-sm line-through">{p.consumerPrice.toLocaleString()}원</p>
+                <p className="text-gray-500 text-sm line-through">
+                  {p.consumerPrice.toLocaleString()}원
+                </p>
 
                 <p className="text-black font-bold mt-1 text-lg">
-                  {p.consumerPrice && p.sellPrice && p.consumerPrice > p.sellPrice && (
-                    <span className="text-red-500 px-2 font-bold">{Math.round(((p.consumerPrice - p.sellPrice) / p.consumerPrice) * 100)}%</span>
-                  )}
+                  {p.consumerPrice &&
+                    p.sellPrice &&
+                    p.consumerPrice > p.sellPrice && (
+                      <span className="text-red-500 px-2 font-bold">
+                        {Math.round(
+                          ((p.consumerPrice - p.sellPrice) /
+                            p.consumerPrice) *
+                            100
+                        )}
+                        %
+                      </span>
+                    )}
                   {p.sellPrice.toLocaleString()}원
                 </p>
               </Link>
@@ -162,17 +218,37 @@ export default function Page() {
 
         {/* 페이징 */}
         <div className="flex justify-center items-center gap-2 mt-8">
-          <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="px-3 py-1 hover:bg-gray-100 transition cursor-pointer">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1 hover:bg-gray-100 transition cursor-pointer"
+          >
             <ChevronLeft />
           </button>
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button key={page} onClick={() => setCurrentPage(page)} className={`px-3 py-1 border rounded transition cursor-pointer ${currentPage === page ? "bg-black text-white border-black" : "hover:bg-gray-100"}`}>
-              {page}
-            </button>
-          ))}
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+            (page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-3 py-1 border rounded transition cursor-pointer ${
+                  currentPage === page
+                    ? "bg-black text-white border-black"
+                    : "hover:bg-gray-100"
+                }`}
+              >
+                {page}
+              </button>
+            )
+          )}
 
-          <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="px-3 py-1 hover:bg-gray-100 transition cursor-pointer">
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 hover:bg-gray-100 transition cursor-pointer"
+          >
             <ChevronRight />
           </button>
         </div>

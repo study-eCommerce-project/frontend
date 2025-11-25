@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Heart, ShoppingCart, LogIn, UserPlus } from "lucide-react";
-import { CATEGORY_TREE } from "../app/lib/categories";
+import { Search, Heart, ShoppingCart, LogIn, UserPlus, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
-import CategoryTree from "@/components/category/categoryTree";
 
 interface SidebarContentProps {
   user: any;
@@ -14,14 +12,30 @@ interface SidebarContentProps {
 
 export default function SidebarContent({ user, onClose }: SidebarContentProps) {
   const [search, setSearch] = useState("");
+  const [tree, setTree] = useState<any>(null);
+  const [open, setOpen] = useState<{ [key: string]: boolean }>({});
   const router = useRouter();
+
+  /** 카테고리 트리 불러오기 */
+  useEffect(() => {
+    async function loadTree() {
+      const res = await fetch("http://localhost:8080/api/categories/tree");
+      const data = await res.json();
+      setTree(data.tree);
+    }
+    loadTree();
+  }, []);
+
+  /** 아코디언 토글 */
+  const toggleOpen = (code: string) => {
+    setOpen((prev) => ({ ...prev, [code]: !prev[code] }));
+  };
 
   return (
     <div className="w-full h-full flex flex-col">
 
-      {/* 사이드바 사용자 */}
+      {/* 로그인 & 위시리스트 */}
       <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
-
         <div className="text-base font-semibold flex items-center gap-4">
           {user ? (
             <Link href="/mypage" onClick={onClose} className="hover:text-blue-500">
@@ -30,13 +44,10 @@ export default function SidebarContent({ user, onClose }: SidebarContentProps) {
           ) : (
             <>
               <Link href="/login" onClick={onClose} className="flex items-center gap-1 text-gray-700 hover:text-black">
-                <LogIn size={20} strokeWidth={1.75} />
-                로그인
+                <LogIn size={20} /> 로그인
               </Link>
-
               <Link href="/signup" onClick={onClose} className="flex items-center gap-1 text-gray-700 hover:text-black">
-                <UserPlus size={20} strokeWidth={1.75} />
-                회원가입
+                <UserPlus size={20} /> 회원가입
               </Link>
             </>
           )}
@@ -44,11 +55,10 @@ export default function SidebarContent({ user, onClose }: SidebarContentProps) {
 
         <div className="flex items-center gap-5">
           <Link href="/wishlist" onClick={onClose}>
-            <Heart size={22} strokeWidth={1.75} className="text-gray-600 hover:text-black" />
+            <Heart size={22} className="text-gray-600 hover:text-black" />
           </Link>
-
           <Link href="/cart" onClick={onClose}>
-            <ShoppingCart size={22} strokeWidth={1.75} className="text-gray-600 hover:text-black" />
+            <ShoppingCart size={22} className="text-gray-600 hover:text-black" />
           </Link>
         </div>
       </div>
@@ -67,16 +77,53 @@ export default function SidebarContent({ user, onClose }: SidebarContentProps) {
         </div>
       </div>
 
-      {/* 카테고리 트리 (compact 모드) */}
-      <div className="flex-1 overflow-y-auto py-2">
-        <CategoryTree
-          data={CATEGORY_TREE}
-          mode="compact"
-          onSelect={(leafId) => {
-            router.push(`/category/${leafId}`);
-            onClose();
-          }}
-        />
+      {/* 카테고리 */}
+      <div className="flex-1 overflow-y-auto py-3 px-4">
+        {tree &&
+          Object.entries(tree).map(([bigCode, bigNode]: any) => (
+            <div key={bigCode} className="mb-3">
+
+              {/* 대분류 */}
+              <button
+                onClick={() => toggleOpen(bigCode)}
+                className="w-full flex items-center justify-between px-2 py-2 text-lg font-semibold text-gray-900 hover:text-blue-600"
+              >
+                {bigNode.title}
+                <ChevronDown
+                  size={18}
+                  className={`transition-transform duration-300 ${
+                    open[bigCode] ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {/* 중분류 */}
+              {open[bigCode] && (
+                <div className="pl-4 mt-1 space-y-2">
+                  {Object.entries(bigNode.children).map(([midCode, midNode]: any) => (
+                    <div key={midCode}>
+                      <p className="font-semibold text-gray-800">{midNode.title}</p>
+
+                      <div className="pl-3 space-y-1">
+                        {Object.entries(midNode.children).map(([leafCode, leafName]: any) => (
+                          <button
+                            key={leafCode}
+                            onClick={() => {
+                              router.push(`/category/${leafCode}`);
+                              onClose();
+                            }}
+                            className="block text-left text-gray-700 hover:text-black"
+                          >
+                            ▸ {leafName}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
       </div>
     </div>
   );

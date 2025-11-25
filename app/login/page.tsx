@@ -8,7 +8,7 @@ export default function LoginPage() {
   console.log("[렌더링] LoginPage 컴포넌트 렌더링됨"); // ← 컴포넌트가 제대로 실행되는지
 
   const router = useRouter();
-  const { setUser } = useUser();
+  const { refreshUser } = useUser();
 
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
@@ -31,14 +31,9 @@ export default function LoginPage() {
 
       const response = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          email: id.trim(),
-          password: pw.trim(),
-        }),
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // ⭐ 세션 쿠키 받기
+        body: JSON.stringify({ email: id.trim(), password: pw.trim() }),
       });
 
       console.log("[FETCH] 요청 보냄 → 응답 상태:", response.status); // ← fetch가 나갔는지, 응답 상태
@@ -56,28 +51,21 @@ export default function LoginPage() {
         return;
       }
 
-      const data = await response.json();
-      console.log("[응답] 서버로부터 받은 유저 정보:", data);
+      // 로그인 성공 → 세션 생성됨
+      await refreshUser(); // ⭐ 서버에서 세션 기반 user 정보 다시 가져오기
 
-      // localStorage에 저장
-      setUser({
-        id: data.id,
-        name: data.name,
-        email: data.email,
-        role: data.role,
+      // role은 UserContext 안에 있음
+      const meRes = await fetch("http://localhost:8080/api/auth/me", {
+        credentials: "include",
       });
+      const me = await meRes.json();
 
-      console.log("[로그인 완료] 유저 상태 저장됨 → Redirect 시작");
-
-      if (data.role === "ADMIN") {
-        router.push("/admin/list");
-      } else {
-        router.push("/");
-      }
+      if (me.role === "ADMIN") router.push("/admin/list");
+      else router.push("/");
 
     } catch (error) {
-      console.error("[ERROR] fetch 요청 중 오류 발생:", error);
-      alert("서버 연결 오류 (백엔드 실행 여부 확인 필요)");
+      console.error(error);
+      alert("서버 연결 오류");
     }
   };
 
@@ -91,26 +79,24 @@ export default function LoginPage() {
 
         <input
           type="text"
-          placeholder="아이디 (이메일)"
           value={id}
           onChange={(e) => setId(e.target.value)}
-          className="text-black p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 ring-blue-500"
-          required
+          placeholder="아이디 (이메일)"
+          className="text-black p-3 border rounded-lg focus:ring-2 ring-blue-500"
           autoFocus
         />
 
         <input
           type="password"
-          placeholder="비밀번호"
           value={pw}
           onChange={(e) => setPw(e.target.value)}
-          className="text-black p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 ring-blue-500"
-          required
+          placeholder="비밀번호"
+          className="text-black p-3 border rounded-lg focus:ring-2 ring-blue-500"
         />
 
         <button
           type="submit"
-          className="p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-500 transition cursor-pointer"
+          className="p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-500 transition"
         >
           로그인
         </button>

@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import CategoryTree from "../../components/category/categoryTree";
-import { CATEGORY_TREE } from "../lib/categories";
+import Category from "../../components/category";
 
 
 interface Product {
@@ -20,6 +19,18 @@ export default function AdminMainPage() {
   const [selectedLeaf, setSelectedLeaf] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
+  const [categoryTree, setCategoryTree] = useState<any>(null);
+
+  // 카테고리 트리 로드
+  useEffect(() => {
+    async function loadTree() {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories/tree`);
+      const data = await res.json();
+      setCategoryTree(data.tree);
+    }
+    loadTree();
+  }, []);
+
 
   // 소분류 선택 시 상품 불러오기
   useEffect(() => {
@@ -50,11 +61,15 @@ export default function AdminMainPage() {
     <div className="flex gap-6 p-6 min-h-screen w-full">
       {/* 🔵 왼쪽 카테고리 트리 */}
       <div className="w-72">
-        <CategoryTree
-          data={CATEGORY_TREE}
-          mode="admin"
-          onSelect={(leafCode) => setSelectedLeaf(leafCode)}
-        />
+        {categoryTree ? (
+          <Category
+            data={categoryTree}
+            onSelect={(leafCode) => setSelectedLeaf(leafCode)}
+          />
+
+        ) : (
+          <p>카테고리 불러오는 중...</p>
+        )}
       </div>
 
       {/* 🟣 오른쪽 상품 리스트 */}

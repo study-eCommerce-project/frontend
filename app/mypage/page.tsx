@@ -61,10 +61,10 @@ export default function MyPage() {
         <div className="mt-6 bg-white rounded-xl shadow divide-y">
           {[
             { title: "장바구니", href: "/cart" },
-            { title: "취소 / 반품 / 교환 내역", href: "/orders/returns" },
-            { title: "재입고 알림 내역", href: "/restock" },
-            { title: "최근 본 상품", href: "/recent" },
-            { title: "내 정보", href: "/mypage" },
+            { title: "결제 내역", href: "/order/history" },
+            { title: "재입고 알림 내역", href: "#" },
+            { title: "최근 본 상품", href: "#" },
+            { title: "내 정보", href: "/mypage/edit" },
           ].map((item, i) => (
             <Link
               key={i}
@@ -75,21 +75,6 @@ export default function MyPage() {
               <ChevronRight className="text-gray-400 w-4 h-4" />
             </Link>
           ))}
-        </div>
-
-        {/* 하단 배너 */}
-        <div className="mt-6 bg-white rounded-xl shadow p-6 flex items-center justify-between">
-          <div>
-            <p className="text-gray-800 font-semibold">
-              매일 새로운 미션 혜택받기
-            </p>
-            <p className="text-sm text-gray-500">
-              무지포, 래플 등 다양한 혜택이 기다리고 있어요
-            </p>
-          </div>
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition">
-            참여하기
-          </button>
         </div>
       </div>
     </div>

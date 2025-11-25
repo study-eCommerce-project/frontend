@@ -30,6 +30,7 @@ interface CartContextType {
   updateQuantity: (cartId: number, quantity: number) => void;
   changeOption: (cartId: number, newOptionId: number) => void;
   deleteItem: (cartId: number) => void;
+  clearCart: () => void; // 추가
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -40,15 +41,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const isAdmin = user?.role?.toUpperCase() === "ADMIN";
 
+  /** 장바구니 불러오기 */
   function loadCart() {
-    // 로그아웃 상태면 즉시 장바구니 비움
+
+    // 1) 로그인 안 되어 있으면 API 호출 금지
     if (!user) {
       setCart([]);
       return;
     }
 
-    if (isAdmin) return;
+    // 2) memberId 없는 경우도 금지 (백엔드에서 NPE 터짐)
+    if (!user?.id) {
+      setCart([]);
+      return;
+    }
 
+    // 3) 관리자면 장바구니 없음 → 호출 금지
+    if (isAdmin) {
+      setCart([]);
+      return;
+    }
+
+    // 4) 여기서만 호출됨 (중복 호출 없음)
     axios
       .get("http://localhost:8080/api/cart")
       .then((res) => setCart(res.data.items || []))
@@ -67,36 +81,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
   function updateQuantity(cartId: number, quantity: number) {
     if (isAdmin) return;
 
-    axios
-      .put("http://localhost:8080/api/cart/quantity", { cartId, quantity })
-      .then(() => loadCart());
+    axios.put("http://localhost:8080/api/cart/quantity", { cartId, quantity }).then(() => loadCart());
   }
 
   function changeOption(cartId: number, newOptionId: number) {
     if (isAdmin) return;
 
-    axios
-      .put("http://localhost:8080/api/cart/option", { cartId, newOptionId })
-      .then(() => loadCart());
+    axios.put("http://localhost:8080/api/cart/option", { cartId, newOptionId }).then(() => loadCart());
   }
 
   function deleteItem(cartId: number) {
     if (isAdmin) return;
 
-    axios
-      .delete(`http://localhost:8080/api/cart/${cartId}`)
-      .then(() => loadCart());
+    axios.delete(`http://localhost:8080/api/cart/${cartId}`).then(() => loadCart());
   }
 
-  /** (로그아웃 시 장바구니 비우기) */
+  /** 장바구니 비우기 */
+  function clearCart() {
+    setCart([]);
+  }
+
+
+  /** 로그인 변경 감지 */
   useEffect(() => {
+    // 로그아웃 시 즉시 비우기
     if (!user) {
-      setCart([]);      // 로그아웃 시 장바구니 즉시 초기화
+      setCart([]);
       return;
     }
 
     if (isAdmin) {
-      setCart([]);      // 관리자 로그인 시에도 장바구니 비우기
+      setCart([]);
       return;
     }
 
@@ -105,7 +120,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ cart, loadCart, addToCart, updateQuantity, changeOption, deleteItem }}
+      value={{ cart, loadCart, addToCart, updateQuantity, changeOption, deleteItem, clearCart }}
     >
       {children}
     </CartContext.Provider>
