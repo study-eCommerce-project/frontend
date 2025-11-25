@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Search } from "lucide-react";
 
 interface Product {
   productId: number;
@@ -13,16 +14,34 @@ interface Product {
 
 export default function AdminListPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // 상품 불러오기
   useEffect(() => {
     fetch("http://localhost:8080/api/products")
       .then((res) => res.json())
-      .then((data) => setProducts(data))
-      .catch(() => {})
+      .then((data) => {
+        setProducts(data);
+        setFilteredProducts(data);
+      })
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, []);
+
+  // 검색어 변경 시 필터링
+  useEffect(() => {
+    if (!searchTerm) {
+      setFilteredProducts(products);
+    } else {
+      setFilteredProducts(
+        products.filter((p) =>
+          p.productName.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    }
+  }, [searchTerm, products]);
 
   if (loading) {
     return (
@@ -41,6 +60,20 @@ export default function AdminListPage() {
     <div className="min-h-screen p-8 bg-gray-100">
       <h1 className="text-3xl font-bold mb-6">상품 리스트</h1>
 
+      {/* 검색창 */}
+      <div className="mb-6 relative w-full md:w-1/2">
+        <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+          <Search className="w-5 h-5 text-gray-400" />
+        </span>
+        <input
+          type="text"
+          placeholder="상품명으로 검색..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full border rounded px-10 py-2 focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
       {/* 상품 목록 */}
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-xl font-semibold mb-4">상품 목록</h2>
@@ -56,7 +89,7 @@ export default function AdminListPage() {
               </tr>
             </thead>
             <tbody>
-              {products.map((p) => (
+              {filteredProducts.map((p) => (
                 <tr key={p.productId} className="border-b hover:bg-gray-50">
                   <td className="py-2 px-4">{p.productId}</td>
                   <td className="py-2 px-4">{p.productName}</td>
@@ -73,6 +106,13 @@ export default function AdminListPage() {
                   </td>
                 </tr>
               ))}
+              {filteredProducts.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="text-center py-4 text-gray-500">
+                    검색 결과가 없습니다.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

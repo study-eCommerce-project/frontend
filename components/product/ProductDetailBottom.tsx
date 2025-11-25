@@ -2,6 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 
+/** Top과 동일한 절대 경로 변환 */
+const toFullUrl = (url: string) => {
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+  return `https://image.msscdn.net${url}`;
+};
+
 export default function ProductDetailBottom({ product }: any) {
   const [activeTab, setActiveTab] = useState("info");
 
@@ -9,10 +16,13 @@ export default function ProductDetailBottom({ product }: any) {
   const sizeRef = useRef<HTMLDivElement>(null);
   const recommendRef = useRef<HTMLDivElement>(null);
 
-  const subImages = product.subImages || [];
+  /** subImages 절대경로 변환 */
+  const subImages: string[] = (product.subImages || [])
+    .map((img: string) => toFullUrl(img))
+    .filter((v: string) => v);
 
   const scrollToSection = (ref: any) => {
-    const offset = 80; // 헤더와 간격 조절
+    const offset = 80;
     const top = ref.current!.offsetTop - offset;
 
     window.scrollTo({
@@ -21,7 +31,7 @@ export default function ProductDetailBottom({ product }: any) {
     });
   };
 
-  // ScrollSpy
+  // Scroll Spy
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -42,48 +52,40 @@ export default function ProductDetailBottom({ product }: any) {
   return (
     <div className="bg-white mt-20 rounded-xl shadow px-8 py-10 space-y-14 max-w-5xl mx-auto">
 
-      {/* NAV TABS */}
+      {/* NAV */}
       <div className="sticky top-20 bg-white z-20 border-b">
-      <div className="flex gap-10 text-lg font-semibold relative">
+        <div className="flex gap-10 text-lg font-semibold relative">
 
-        {["info", "size", "recommend"].map((tab) => (
-          <button
-            key={tab}
-            className={`
-              group py-4 transition-all duration-200
-              cursor-pointer
-              ${activeTab === tab 
-                ? "text-blue-600" 
-                : "text-gray-500 hover:text-blue-500"}
-            `}
-            onClick={() => {
-              if (tab === "info") scrollToSection(infoRef);
-              if (tab === "size") scrollToSection(sizeRef);
-              if (tab === "recommend") scrollToSection(recommendRef);
-            }}
-          >
-            {/* 텍스트 */}
-            {tab === "info" && "정보"}
-            {tab === "size" && "사이즈"}
-            {tab === "recommend" && "추천"}
-
-            {/* underline */}
-            <div
+          {["info", "size", "recommend"].map((tab) => (
+            <button
+              key={tab}
               className={`
-                h-[3px] w-full mt-2 origin-left transition-all duration-200
-                ${activeTab === tab
-                  ? "bg-blue-600 scale-x-100"
-                  : "bg-transparent scale-x-0 group-hover:bg-blue-500 group-hover:scale-x-100"}
+                group py-4 cursor-pointer transition-all
+                ${activeTab === tab ? "text-blue-600" : "text-gray-500 hover:text-blue-500"}
               `}
-            />
-          </button>
-        ))}
+              onClick={() => {
+                if (tab === "info") scrollToSection(infoRef);
+                if (tab === "size") scrollToSection(sizeRef);
+                if (tab === "recommend") scrollToSection(recommendRef);
+              }}
+            >
+              {tab === "info" && "정보"}
+              {tab === "size" && "사이즈"}
+              {tab === "recommend" && "추천"}
 
+              <div
+                className={`
+                  h-[3px] w-full mt-2 transition-all origin-left
+                  ${activeTab === tab ? "bg-blue-600 scale-x-100" : "scale-x-0 group-hover:scale-x-100 bg-blue-500"}
+                `}
+              />
+            </button>
+          ))}
+
+        </div>
       </div>
-    </div>
 
-
-      {/* 1. 정보 섹션 */}
+      {/* 1. 정보 */}
       <section
         id="info"
         ref={infoRef}
@@ -92,41 +94,22 @@ export default function ProductDetailBottom({ product }: any) {
         <h2 className="text-2xl font-bold">제품 상세 정보</h2>
 
         <p className="text-gray-700 leading-relaxed max-w-3xl">
-          클래식한 골프 무드와 빈티지 아카데미 감성을 결합한
+          클래식한 골프 무드와 빈티지 아카데미 감성을 결합한 
           <strong className="font-semibold">크림 & 그린 투톤 크루넥 스웻셔츠</strong>입니다.
-          부드러운 코튼 기반 원단으로 제작되어 일상과 가벼운 아웃도어 모두 아우르는
-          활용도가 높은 아이템입니다.
         </p>
 
-        <ul className="list-disc pl-5 text-gray-700 max-w-md text-left">
-          <li>1960’s 빈티지 무드의 아치 로고 자수</li>
-          <li>넥/소매/밑단 탄탄한 립 짜임</li>
-          <li>적당히 여유로운 레귤러 핏</li>
-          <li>캡/양말 등과 코디하면 더 완성도 있는 스타일링 가능</li>
-        </ul>
-
-        {subImages[0] && <img src={subImages[0]} className="w-full max-w-md rounded-xl" />}
-
-        <h3 className="text-xl font-bold pt-6">스타일링 포인트</h3>
-        <p className="text-gray-700 leading-relaxed max-w-3xl">
-          크림 베이스의 톤과 딥그린 포인트 컬러가 자연스럽게 조화되어
-          골프웨어, 캠퍼스룩, 캐주얼 데일리룩까지 폭넓게 연출할 수 있습니다.
-        </p>
-
-        {subImages[1] && <img src={subImages[1]} className="w-full max-w-md rounded-xl" />}
+        {subImages[0] && (
+          <img src={subImages[0]} className="w-full max-w-md rounded-xl" />
+        )}
       </section>
 
-      {/* 2. 사이즈 섹션 */}
+      {/* 2. 사이즈 */}
       <section
         id="size"
         ref={sizeRef}
         className="space-y-10 pt-6 flex flex-col items-center text-center"
       >
         <h2 className="text-2xl font-bold">사이즈 정보</h2>
-
-        <p className="text-gray-700 max-w-3xl">
-          편안하게 떨어지는 레귤러 핏이며, 평소 착용하는 사이즈 기준으로 선택하면 됩니다.
-        </p>
 
         <table className="w-full max-w-md border-collapse text-left">
           <thead>
@@ -151,21 +134,22 @@ export default function ProductDetailBottom({ product }: any) {
           </tbody>
         </table>
 
-        {subImages[2] && <img src={subImages[2]} className="w-full max-w-md rounded-xl" />}
+        {subImages[1] && (
+          <img src={subImages[1]} className="w-full max-w-md rounded-xl" />
+        )}
       </section>
 
-      {/* 3. 추천 섹션 */}
+      {/* 3. 추천 */}
       <section
         id="recommend"
         ref={recommendRef}
         className="space-y-10 pt-6 flex flex-col items-center text-center"
       >
         <h2 className="text-2xl font-bold">추천 상품</h2>
-        <p className="text-gray-700 max-w-3xl">
-          유사한 무드의 빈티지 스포티 아이템들을 추천드립니다.
-        </p>
 
-        {subImages[3] && <img src={subImages[3]} className="w-full max-w-md rounded-xl" />}
+        {subImages[2] && (
+          <img src={subImages[2]} className="w-full max-w-md rounded-xl" />
+        )}
       </section>
     </div>
   );

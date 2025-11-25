@@ -23,17 +23,16 @@ interface Product {
   consumerPrice?: number;
   sellPrice: number;
   stock: number;
-  isOption?: number; // 1이면 옵션 있음
+  isOption?: number;
   options?: { optionId: number; optionValue: string }[];
+  categoryPath: string
 }
 
-/** ------------------------------
- *  이미지 경로를 절대 경로로 변환해줌 (중요)
- *  ------------------------------ */
+/** 절대 경로 변환 */
 const toFullUrl = (url: string) => {
   if (!url) return "";
-  if (url.startsWith("http")) return url; // 이미 절대경로면 그대로
-  return `http://localhost:8080${url}`;
+  if (url.startsWith("http")) return url;
+  return `https://image.msscdn.net${url}`;
 };
 
 export default function ProductDetailTop({ product }: { product: Product }) {
@@ -41,30 +40,54 @@ export default function ProductDetailTop({ product }: { product: Product }) {
   const { user } = useUser();
   const { addToCart } = useCart();
 
+  /** 이미지 경로가 아직 준비 안 되었으면 렌더 막기 */
+  if (!product.mainImg) return null;
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
 
-  const [mainImage, setMainImage] = useState<string>(
-    toFullUrl(product.mainImg || "/images/default_main.png")
-  );
+  // const [mainImage, setMainImage] = useState<string>(
+  //   toFullUrl(product.mainImg || "/images/default_main.png")
+  // );
+
+  const initialMainImg = toFullUrl(product.mainImg || "/images/default_main.png")
+  const [mainImage, setMainImage] = useState(initialMainImg);
+
+  /** mainImage 조차 없으면 렌더 X → 404 방지 */
+  if (!mainImage) return null;
+
+  // const thumbnails: string[] =
+  //   product.subImages?.length
+  //     ? product.subImages.map((img) => toFullUrl(img))
+  //     : product.mainImg
+  //     ? [initialMainImg]
+  //     : [];
+
+  const thumbnails: string[] =
+  product.subImages?.length
+    ? product.subImages.map((img) => toFullUrl(img))
+    : [initialMainImg]; // mainImg 없으면 default 포함
+
+
+  if (thumbnails.length === 0) return null;
 
   const [selectedOptions, setSelectedOptions] = useState<SelectedOption[]>([]);
   const detailRef = useRef<HTMLDivElement>(null);
-
-  const thumbnails: string[] = product.subImages?.length
-    ? product.subImages.map((img) => toFullUrl(img))
-    : product.mainImg
-      ? [toFullUrl(product.mainImg)]
-      : [];
 
   /** 좋아요 초기화 */
   useEffect(() => {
     const likedItems: number[] = JSON.parse(localStorage.getItem("likedProducts") || "[]");
     const likeCounts: Record<number, number> = JSON.parse(localStorage.getItem("likeCounts") || "{}");
 
+<<<<<<< HEAD
     setLiked(likedItems.includes(product.productId));
 
     // 저장된 likeCount가 있으면 불러오기
+=======
+    // 좋아요 여부
+    setLiked(likedItems.includes(product.productId));
+
+    // 기존 누적 좋아요 카운트 불러오기 (없으면 0)
+>>>>>>> main
     setLikeCount(likeCounts[product.productId] || 0);
   }, [product.productId]);
 
@@ -94,7 +117,7 @@ export default function ProductDetailTop({ product }: { product: Product }) {
     localStorage.setItem("likeCounts", JSON.stringify(likeCounts));
   };
 
-  /** 커스텀 드롭다운 / 옵션 선택 */
+  /** 옵션 선택 */
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -118,9 +141,7 @@ export default function ProductDetailTop({ product }: { product: Product }) {
     setDropdownOpen(false);
   };
 
-  /** ------------------------------ */
-  /** 장바구니 담기 (세션 기반 완전 연동됨) */
-  /** ------------------------------ */
+  /** 장바구니 */
   const handleAddToCart = async () => {
     if (!user) {
       if (window.confirm("로그인이 필요합니다. 로그인하시겠습니까?")) {
@@ -135,11 +156,7 @@ export default function ProductDetailTop({ product }: { product: Product }) {
     }
 
     for (const opt of selectedOptions) {
-      await addToCart(
-        product.productId, // productId
-        opt.optionId,      // optionId
-        opt.count          // quantity
-      );
+      await addToCart(product.productId, opt.optionId, opt.count);
     }
 
     if (window.confirm("장바구니에 담았습니다.\n장바구니 페이지로 이동할까요?")) {
@@ -178,9 +195,7 @@ export default function ProductDetailTop({ product }: { product: Product }) {
     <div className="max-w-6xl mx-auto my-10 bg-white p-8 rounded-xl shadow flex flex-col">
       <div className="grid md:grid-cols-2 gap-10 items-start">
 
-        {/* ------------------------------ */}
-        {/*  이미지 영역 */}
-        {/* ------------------------------ */}
+        {/* 이미지 영역 */}
         <div ref={detailRef} className="flex flex-row gap-6">
           <div className="flex flex-col gap-2 overflow-y-auto max-h-[500px] min-w-[5rem]">
             {thumbnails.map((thumb, idx) => (
@@ -188,8 +203,9 @@ export default function ProductDetailTop({ product }: { product: Product }) {
                 key={idx}
                 src={thumb}
                 alt={`썸네일 ${idx}`}
-                className={`w-20 h-20 object-contain rounded border ${mainImage === thumb ? "border-gray-800" : "border-gray-300"
-                  } hover:cursor-pointer`}
+                className={`w-20 h-20 object-contain rounded border ${
+                  mainImage === thumb ? "border-gray-800" : "border-gray-300"
+                } hover:cursor-pointer`}
                 onClick={() => setMainImage(thumb)}
               />
             ))}
@@ -206,8 +222,23 @@ export default function ProductDetailTop({ product }: { product: Product }) {
 
         {/* 상품 정보 영역 */}
         <div className="flex flex-col items-center md:items-start text-center md:text-left">
+          {/* ⭐ 카테고리 경로 UI */}
+          {product.categoryPath && (
+            <div className="text-sm text-gray-500 mb-4 flex items-center gap-2">
+              {product.categoryPath
+                .split(">")
+                .map((cat: string, idx: number) => (
+                  <span key={idx} className="flex items-center gap-2">
+                    <span>{cat.trim()}</span>
+                    {idx < product.categoryPath.split(">").length - 1 && (
+                      <span className="text-gray-400">/</span>
+                    )}
+                  </span>
+                ))}
+            </div>
+          )}
+
           <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.productName}</h1>
-          <p className="text-gray-700 mb-6 max-w-md">{product.description || "설명이 없습니다."}</p>
 
           <div className="mb-6 text-center md:text-left">
             <p className="text-gray-400 text-sm line-through">{product.consumerPrice?.toLocaleString()}원</p>
@@ -220,7 +251,7 @@ export default function ProductDetailTop({ product }: { product: Product }) {
             <p className="text-gray-600 mt-2 text-sm">재고: {product.stock}개</p>
           </div>
 
-          {/* 커스텀 드롭다운 */}
+          {/* 옵션 UI */}
           {product.isOption && product.options?.length ? (
             <div className="mb-6 relative w-full" ref={dropdownRef}>
               <label className="block text-gray-700 mb-2 font-medium">옵션 선택</label>
@@ -242,10 +273,11 @@ export default function ProductDetailTop({ product }: { product: Product }) {
                       onClick={() =>
                         handleSelectOption({ optionId: opt.optionId, value: opt.optionValue })
                       }
-                      className={`p-2 hover:bg-blue-100 hover:cursor-pointer ${selectedOptions.find((o) => o.optionId === opt.optionId)
-                        ? "bg-gray-200"
-                        : ""
-                        }`}
+                      className={`p-2 hover:bg-blue-100 hover:cursor-pointer ${
+                        selectedOptions.some((o) => o.optionId === opt.optionId)
+                          ? "bg-gray-200"
+                          : ""
+                      }`}
                     >
                       {opt.optionValue}
                     </li>
@@ -255,10 +287,13 @@ export default function ProductDetailTop({ product }: { product: Product }) {
             </div>
           ) : null}
 
-          {/* 선택 옵션 박스 */}
+          {/* 선택 옵션 목록 */}
           <div className="flex flex-col gap-4 mb-6 w-full">
             {selectedOptions.map((item) => (
-              <div key={item.optionId} className="border p-4 rounded-lg shadow-sm flex justify-between items-center w-full">
+              <div
+                key={item.optionId}
+                className="border p-4 rounded-lg shadow-sm flex justify-between items-center w-full"
+              >
                 <div className="flex-1">
                   <p className="font-medium">{item.value}</p>
                   <div className="flex items-center gap-3 mt-2">
@@ -266,7 +301,9 @@ export default function ProductDetailTop({ product }: { product: Product }) {
                       onClick={() =>
                         setSelectedOptions((prev) =>
                           prev.map((p) =>
-                            p.optionId === item.optionId ? { ...p, count: Math.max(1, p.count - 1) } : p
+                            p.optionId === item.optionId
+                              ? { ...p, count: Math.max(1, p.count - 1) }
+                              : p
                           )
                         )
                       }
@@ -293,7 +330,11 @@ export default function ProductDetailTop({ product }: { product: Product }) {
                 </div>
 
                 <button
-                  onClick={() => setSelectedOptions((prev) => prev.filter((p) => p.optionId !== item.optionId))}
+                  onClick={() =>
+                    setSelectedOptions((prev) =>
+                      prev.filter((p) => p.optionId !== item.optionId)
+                    )
+                  }
                   className="text-gray-400 hover:text-black hover:cursor-pointer ml-4"
                 >
                   <X size={20} />

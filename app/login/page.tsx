@@ -6,7 +6,7 @@ import { useUser } from "../../context/UserContext";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setUser } = useUser();
+  const { refreshUser } = useUser();
 
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
@@ -20,18 +20,12 @@ export default function LoginPage() {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/api/login", {
+      const response = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          email: id.trim(),
-          password: pw.trim(),
-        }),
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // ⭐ 세션 쿠키 받기
+        body: JSON.stringify({ email: id.trim(), password: pw.trim() }),
       });
-
 
       if (response.status === 404) {
         alert("존재하지 않는 사용자입니다.");
@@ -46,26 +40,21 @@ export default function LoginPage() {
         return;
       }
 
-      const data = await response.json();
+      // 로그인 성공 → 세션 생성됨
+      await refreshUser(); // ⭐ 서버에서 세션 기반 user 정보 다시 가져오기
 
-      /**  localStorage + setUser */
-      setUser({
-        id: data.id,
-        name: data.name,
-        email: data.email,
-        role: data.role,
+      // role은 UserContext 안에 있음
+      const meRes = await fetch("http://localhost:8080/api/auth/me", {
+        credentials: "include",
       });
+      const me = await meRes.json();
 
-      // ⭐ 권한 분기 처리
-      if (data.role === "ADMIN") {
-        router.push("/admin/list");
-      } else {
-        router.push("/");
-      }
+      if (me.role === "ADMIN") router.push("/admin/list");
+      else router.push("/");
 
     } catch (error) {
       console.error(error);
-      alert("서버 연결 오류 (백엔드 실행 여부 확인 필요)");
+      alert("서버 연결 오류");
     }
   };
 
@@ -79,26 +68,24 @@ export default function LoginPage() {
 
         <input
           type="text"
-          placeholder="아이디 (이메일)"
           value={id}
           onChange={(e) => setId(e.target.value)}
-          className="text-black p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 ring-blue-500"
-          required
+          placeholder="아이디 (이메일)"
+          className="text-black p-3 border rounded-lg focus:ring-2 ring-blue-500"
           autoFocus
         />
 
         <input
           type="password"
-          placeholder="비밀번호"
           value={pw}
           onChange={(e) => setPw(e.target.value)}
-          className="text-black p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 ring-blue-500"
-          required
+          placeholder="비밀번호"
+          className="text-black p-3 border rounded-lg focus:ring-2 ring-blue-500"
         />
 
         <button
           type="submit"
-          className="p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-500 transition cursor-pointer"
+          className="p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-500 transition"
         >
           로그인
         </button>
