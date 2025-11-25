@@ -42,8 +42,14 @@ export default function ProductDetailTop({ product }: { product: Product }) {
 
   /** 이미지 경로가 아직 준비 안 되었으면 렌더 막기 */
   if (!product.mainImg) return null;
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
 
-  const initialMainImg = toFullUrl(product.mainImg);
+  // const [mainImage, setMainImage] = useState<string>(
+  //   toFullUrl(product.mainImg || "/images/default_main.png")
+  // );
+
+  const initialMainImg = toFullUrl(product.mainImg || "/images/default_main.png")
   const [mainImage, setMainImage] = useState(initialMainImg);
 
   /** mainImage 조차 없으면 렌더 X → 404 방지 */
@@ -58,7 +64,6 @@ export default function ProductDetailTop({ product }: { product: Product }) {
 
   if (thumbnails.length === 0) return null;
 
-  const [liked, setLiked] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<SelectedOption[]>([]);
   const detailRef = useRef<HTMLDivElement>(null);
 
@@ -73,11 +78,15 @@ export default function ProductDetailTop({ product }: { product: Product }) {
     let updated: number[];
 
     if (likedItems.includes(product.productId)) {
+      // 좋아요 취소
       updated = likedItems.filter((id) => id !== product.productId);
       setLiked(false);
+      setLikeCount((prev) => Math.max(prev - 1, 0)); // 음수 방지
     } else {
+      // 좋아요 추가
       updated = [...likedItems, product.productId];
       setLiked(true);
+      setLikeCount((prev) => prev + 1);
     }
 
     localStorage.setItem("likedProducts", JSON.stringify(updated));
@@ -128,6 +137,33 @@ export default function ProductDetailTop({ product }: { product: Product }) {
     if (window.confirm("장바구니에 담았습니다.\n장바구니 페이지로 이동할까요?")) {
       router.push("/cart");
     }
+  };
+
+  const handleBuyNow = () => {
+    if (!user) {
+      if (window.confirm("로그인이 필요합니다. 로그인하시겠습니까?")) {
+        router.push("/login");
+      }
+      return;
+    }
+
+    if (product.isOption && selectedOptions.length === 0) {
+      alert("옵션을 선택해주세요!");
+      return;
+    }
+
+    // 결제 정보 전달
+    const orderInfo = {
+      productId: product.productId,
+      productName: product.productName,
+      mainImg: product.mainImg,
+      sellPrice: product.sellPrice,
+      options: selectedOptions,
+    };
+
+    sessionStorage.setItem("checkoutData", JSON.stringify(orderInfo));
+
+    router.push("/checkout");
   };
 
   return (
@@ -286,17 +322,21 @@ export default function ProductDetailTop({ product }: { product: Product }) {
           <div className="flex flex-col md:flex-row items-center gap-4 w-full">
             <button
               onClick={handleLike}
-              className={`p-2 border rounded-lg transition-all w-full md:w-auto ${
-                liked ? "bg-rose-50 border-rose-300" : "bg-white border-gray-300"
-              } hover:cursor-pointer`}
+              className={`flex items-center gap-2 p-2 border rounded-lg transition-all w-full md:w-auto ${liked ? "bg-rose-50 border-rose-300" : "bg-white border-gray-300"
+                } hover:cursor-pointer`}
             >
               <Heart
-                className={`w-7 h-7 ${
-                  liked ? "fill-rose-500 stroke-rose-500" : "stroke-gray-400"
-                }`}
+                className={`w-7 h-7 ${liked ? "fill-rose-500 stroke-rose-500" : "stroke-gray-400"
+                  }`}
               />
+              {/* 좋아요 개수 */}
+              <span
+                className={`text-base font-medium ${liked ? "text-rose-500" : "text-gray-500"
+                  }`}
+              >
+                {likeCount}
+              </span>
             </button>
-
             <button
               onClick={handleAddToCart}
               className="flex-1 w-full bg-gray-100 text-gray-600 py-3 rounded-lg hover:bg-gray-200 hover:cursor-pointer"
@@ -304,7 +344,7 @@ export default function ProductDetailTop({ product }: { product: Product }) {
               장바구니
             </button>
             <button
-              onClick={handleLike}
+              onClick={handleBuyNow}
               className="flex-1 w-full bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-800 hover:cursor-pointer"
             >
               구매하기

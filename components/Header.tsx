@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "../context/UserContext";
 import { useCart } from "../context/CartContext";   // 🔥 반드시 추가
-import { Search } from "lucide-react";
+import { Search, Menu } from "lucide-react";
 import Sidebar from "./Sidebar";
 import SidebarContent from "./SidebarContent";
 
@@ -103,21 +103,10 @@ export default function Header() {
 
         {/* 햄버거 버튼 */}
         <button
-          className="relative w-10 h-10 flex items-center justify-center cursor-pointer z-[999]"
+          className="w-10 h-10 flex items-center justify-center cursor-pointer z-[999]"
           onClick={() => setMenuOpen(true)}
         >
-          <span
-            className={`absolute block w-8 h-1 bg-white rounded transition-all duration-300
-            ${menuOpen ? "rotate-45 translate-y-0" : "-translate-y-2"}`}
-          />
-          <span
-            className={`absolute block w-8 h-1 bg-white rounded transition-opacity duration-300
-            ${menuOpen ? "opacity-0" : "opacity-100"}`}
-          />
-          <span
-            className={`absolute block w-8 h-1 bg-white rounded transition-all duration-300
-            ${menuOpen ? "-rotate-45 translate-y-0" : "translate-y-2"}`}
-          />
+          <Menu size={24} className="text-white" />
         </button>
       </header>
 
