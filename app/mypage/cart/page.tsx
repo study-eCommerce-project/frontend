@@ -7,9 +7,8 @@ import { useRouter } from "next/navigation";
 
 export default function CartPage() {
   const router = useRouter();
+  const { cart, deleteItem, updateQuantity, clearCart } = useCart(); // ← clearCart 추가!
   
-  const { cart, deleteItem, updateQuantity } = useCart();
-
   const totalPrice = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -21,7 +20,20 @@ export default function CartPage() {
 
         {/* 장바구니 목록 */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow p-6 flex flex-col gap-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">장바구니</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-gray-900">장바구니</h1>
+
+            {/* 🔥 전체삭제 버튼 */}
+            {cart.length > 0 && (
+              <button
+                onClick={clearCart}
+                className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm cursor-pointer"
+              >
+                <Trash2 size={16} />
+                전체삭제
+              </button>
+            )}
+          </div>
 
           {cart.length === 0 ? (
             <p className="text-gray-500 text-center py-10 text-lg">
@@ -52,14 +64,12 @@ export default function CartPage() {
                       {item.productName}
                     </p>
 
-                    {/* 옵션 표시 */}
                     {item.option && (
                       <p className="text-gray-500 text-sm mt-1">
                         옵션: [{item.option.optionTitle}] {item.option.optionValue}
                       </p>
                     )}
 
-                    {/* 품절 표시 */}
                     {item.soldOut && (
                       <p className="text-red-500 text-sm font-semibold mt-1">
                         품절된 상품입니다
@@ -101,7 +111,7 @@ export default function CartPage() {
 
                       <button
                         onClick={() => deleteItem(item.cartId)}
-                        className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm cursor-pointer"
+                        className="flex items-center gap-1 px-3 py-1 text-red-500 rounded-lg hover:bg-red-600 transition text-sm cursor-pointer"
                       >
                         <Trash2 size={14} /> 삭제
                       </button>
@@ -129,7 +139,9 @@ export default function CartPage() {
               </div>
               <div className="flex justify-between pt-3 border-t font-bold text-lg">
                 <span>총 결제 금액</span>
-                <span className="text-blue-600">{totalPrice.toLocaleString()}원</span>
+                <span className="text-blue-600">
+                  {totalPrice.toLocaleString()}원
+                </span>
               </div>
             </div>
 
