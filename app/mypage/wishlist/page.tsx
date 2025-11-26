@@ -1,9 +1,9 @@
 "use client";
 
-<<<<<<< HEAD:app/wishlist/page.tsx
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
+import { useWishlist } from "../../../context/WishlistContext";
 
 interface WishlistItem {
   productId: number;
@@ -14,6 +14,7 @@ interface WishlistItem {
 
 export default function WishlistPage() {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
+  // const {wishlist, removeFromWishlist } = useWishlist();
   const [loading, setLoading] = useState(true);
 
   const loadWishlist = async () => {
@@ -46,14 +47,6 @@ export default function WishlistPage() {
 
     loadWishlist();
   };
-=======
-import Link from "next/link";
-import { Trash2 } from "lucide-react";
-import { useWishlist } from "../../../context/WishlistContext";
-
-export default function WishlistPage() {
-  const { wishlist, removeFromWishlist } = useWishlist();
->>>>>>> daehyun:app/mypage/wishlist/page.tsx
 
   if (loading) return <p className="text-center py-10">로딩 중...</p>;
 
@@ -84,24 +77,17 @@ export default function WishlistPage() {
                 <p className="text-gray-800 font-medium text-center">
                   {item.productName}
                 </p>
-<<<<<<< HEAD:app/wishlist/page.tsx
 
                 <p className="text-black font-bold">
+                  {/* {item.sellPrice.toLocaleString()}원 */}
                   {item.sellPrice
                     ? `${item.sellPrice.toLocaleString()}원`
                     : ""}
                 </p>
 
                 <button
+                // onClick={() => removeFromWishlist(item.productId)}
                   onClick={() => removeItem(item.productId)}
-=======
-                <p className="text-black font-bold">
-                  {item.sellPrice.toLocaleString()}원
-                </p>
-
-                <button
-                  onClick={() => removeFromWishlist(item.productId)}
->>>>>>> daehyun:app/mypage/wishlist/page.tsx
                   className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm mt-2"
                 >
                   <Trash2 size={14} /> 삭제
