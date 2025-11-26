@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import CategoryTreeAccordion from "./components/CategoryTreeAccordion";
+import FabAddButton from "./components/FabAddButton";
+
 
 interface Product {
   productId: number;
@@ -107,6 +109,11 @@ export default function AdminMainPage() {
           </ul>
         )}
       </div>
+
+
+      {/* 🟦 플로팅 + 버튼 */}
+      <FabAddButton />
+
     </div>
   );
 }

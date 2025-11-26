@@ -15,8 +15,64 @@ export default function SidebarContent({ user, onClose }: SidebarContentProps) {
 
   const [search, setSearch] = useState("");
   const [tree, setTree] = useState<any>(null);
+  const [originalTree, setOriginalTree] = useState<any>(null);
   const [open, setOpen] = useState<{ [key: string]: boolean }>({});
   const router = useRouter();
+
+  useEffect(() => {
+    async function loadTree() {
+      const res = await fetch("http://localhost:8080/api/categories/tree");
+      const data = await res.json();
+      setOriginalTree(data.tree);
+      setTree(data.tree);
+    }
+    loadTree();
+  }, []);
+
+  //검색어로 트리 필터링
+  useEffect(() => {
+    if (!originalTree) return;
+
+    const q = search.trim().toLowerCase();
+    if (q === "") {
+      setTree(originalTree);
+      return;
+    }
+
+    const filtered: any = {};
+
+    Object.entries(originalTree).forEach(([bigCode, bigNode]: any) => {
+      const bigMatch = bigNode.title.toLowerCase().includes(q);
+      const filteredMid: any = {};
+
+      Object.entries(bigNode.children).forEach(([midCode, midNode]: any) => {
+        const midMatch = midNode.title.toLowerCase().includes(q);
+        const filteredLeaf: any = {};
+
+        Object.entries(midNode.children).forEach(([leafCode, leafName]: any) => {
+          const leafMatch = leafName.toLowerCase().includes(q);
+          if (leafMatch) filteredLeaf[leafCode] = leafName;
+        });
+
+        if (midMatch || Object.keys(filteredLeaf).length > 0) {
+          filteredMid[midCode] = {
+            title: midNode.title,
+            children: filteredLeaf,
+          };
+        }
+      });
+
+      if (bigMatch || Object.keys(filteredMid).length > 0) {
+        filtered[bigCode] = {
+          title: bigNode.title,
+          children: filteredMid,
+        };
+      }
+    });
+
+    setTree(filtered);
+  }, [search, originalTree]);
+
 
   /** 카테고리 트리 불러오기 */
   useEffect(() => {

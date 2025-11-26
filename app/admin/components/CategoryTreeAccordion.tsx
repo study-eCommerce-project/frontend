@@ -53,7 +53,7 @@ export default function CategoryTreeAccordion({ data, onSelect }: CategoryTreePr
                           onClick={() => onSelect(leafCode)}
                           className="px-3 py-1 rounded cursor-pointer bg-gray-500 hover:bg-gray-400"
                         >
-                          {leafNode.title}
+                          {leafNode}
                         </p>
                       ))}
                     </div>

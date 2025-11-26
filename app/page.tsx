@@ -38,9 +38,9 @@ export default function Page() {
   const pageSize = 8;
 
   const bannerImages = [
-    "/images/banner1.png",
-    "/images/banner2.png",
-    "/images/banner3.png",
+    "/images/banner1(h-300).png",
+    "/images/banner2(h-300).png",
+    "/images/banner3(h-300).png",
   ];
 
   const truncate = (text: string, max = 15) =>
@@ -101,12 +101,11 @@ export default function Page() {
 
   return (
     <div className="w-full overflow-x-hidden">
-      {/* 배너 */}
       <Swiper
         modules={[Autoplay]}
         loop
         autoplay={{ delay: 5000, disableOnInteraction: false }}
-        className="w-full h-[45vh] sm:h-[55vh] md:h-[65vh]"
+        className="w-full h-[300px]"
       >
         {bannerImages.map((src, idx) => (
           <SwiperSlide key={idx}>
@@ -114,11 +113,11 @@ export default function Page() {
               src={src}
               alt={`banner-${idx}`}
               className="w-full h-full object-cover"
-              draggable={false}
             />
           </SwiperSlide>
         ))}
       </Swiper>
+
 
       {/* 상품 목록 */}
       <div className="w-full max-w-6xl mt-24 mx-auto px-4">
