@@ -110,13 +110,18 @@ export default function SidebarContent({ user, onClose }: SidebarContentProps) {
         </div>
 
         <div className="flex items-center gap-5">
-          <Link href="/wishlist" onClick={onClose}>
-            <Heart size={22} className="text-gray-600 hover:text-black" />
-          </Link>
-          <Link href="/cart" onClick={onClose}>
-            <ShoppingCart size={22} className="text-gray-600 hover:text-black" />
-          </Link>
+          {user && user.role !== "ADMIN" && (
+            <>
+              <Link href="/wishlist" onClick={onClose}>
+                <Heart size={22} className="text-gray-600 hover:text-black" />
+              </Link>
+              <Link href="/cart" onClick={onClose}>
+                <ShoppingCart size={22} className="text-gray-600 hover:text-black" />
+              </Link>
+            </>
+          )}
         </div>
+
       </div>
 
       {/* 검색 */}

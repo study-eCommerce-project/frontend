@@ -1,4 +1,5 @@
 "use client";
+import axios from "@/context/axiosConfig";
 
 import {
   createContext,
@@ -38,18 +39,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   /** 세션 기반 로그인 복원 */
   const refreshUser = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/auth/me", {
-        credentials: "include",
-      });
+      const res = await axios.get("http://localhost:8080/api/auth/me");
 
-      if (!res.ok) {
-        setUserState(null);
-        return;
-      }
-
-      const data = await res.json();
-      setUserState(data);
-    } catch {
+      setUserState(res.data);
+    } catch (error) {
+      // 401이면 axiosConfig가 자동 로그아웃 + redirect
       setUserState(null);
     }
   };

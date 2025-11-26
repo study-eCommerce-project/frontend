@@ -40,8 +40,6 @@ export default function ProductDetailTop({ product }: { product: Product }) {
   const { user } = useUser();
   const { addToCart } = useCart();
 
-  /** 이미지 경로가 아직 준비 안 되었으면 렌더 막기 */
-  if (!product.mainImg) return null;
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
 
@@ -55,18 +53,12 @@ export default function ProductDetailTop({ product }: { product: Product }) {
   /** mainImage 조차 없으면 렌더 X → 404 방지 */
   if (!mainImage) return null;
 
-  // const thumbnails: string[] =
-  //   product.subImages?.length
-  //     ? product.subImages.map((img) => toFullUrl(img))
-  //     : product.mainImg
-  //     ? [initialMainImg]
-  //     : [];
-
   const thumbnails: string[] =
-  product.subImages?.length
-    ? product.subImages.map((img) => toFullUrl(img))
-    : [initialMainImg]; // mainImg 없으면 default 포함
-
+    product.subImages?.length
+      ? product.subImages.map((img) => toFullUrl(img))
+      : product.mainImg
+      ? [initialMainImg]
+      : [];
 
   if (thumbnails.length === 0) return null;
 
@@ -76,39 +68,26 @@ export default function ProductDetailTop({ product }: { product: Product }) {
   /** 좋아요 초기화 */
   useEffect(() => {
     const likedItems: number[] = JSON.parse(localStorage.getItem("likedProducts") || "[]");
-    const likeCounts: Record<number, number> = JSON.parse(localStorage.getItem("likeCounts") || "{}");
-
-    // 좋아요 여부
     setLiked(likedItems.includes(product.productId));
-
-    // 기존 누적 좋아요 카운트 불러오기 (없으면 0)
-    setLikeCount(likeCounts[product.productId] || 0);
   }, [product.productId]);
 
   const handleLike = () => {
     const likedItems: number[] = JSON.parse(localStorage.getItem("likedProducts") || "[]");
-    const likeCounts: Record<number, number> = JSON.parse(localStorage.getItem("likeCounts") || "{}");
-    let updatedLiked: number[];
+    let updated: number[];
 
     if (likedItems.includes(product.productId)) {
       // 좋아요 취소
-      updatedLiked = likedItems.filter((id) => id !== product.productId);
+      updated = likedItems.filter((id) => id !== product.productId);
       setLiked(false);
-
-      likeCounts[product.productId] = Math.max((likeCounts[product.productId] || 1) - 1, 0);
-      setLikeCount(likeCounts[product.productId]);
+      setLikeCount((prev) => Math.max(prev - 1, 0)); // 음수 방지
     } else {
       // 좋아요 추가
-      updatedLiked = [...likedItems, product.productId];
+      updated = [...likedItems, product.productId];
       setLiked(true);
-
-      likeCounts[product.productId] = (likeCounts[product.productId] || 0) + 1;
-      setLikeCount(likeCounts[product.productId]);
+      setLikeCount((prev) => prev + 1);
     }
 
-    // 저장
-    localStorage.setItem("likedProducts", JSON.stringify(updatedLiked));
-    localStorage.setItem("likeCounts", JSON.stringify(likeCounts));
+    localStorage.setItem("likedProducts", JSON.stringify(updated));
   };
 
   /** 옵션 선택 */
@@ -336,39 +315,44 @@ export default function ProductDetailTop({ product }: { product: Product }) {
               </div>
             ))}
           </div>
-
-          {/* 버튼 */}
-          <div className="flex flex-col md:flex-row items-center gap-4 w-full">
-            <button
-              onClick={handleLike}
-              className={`flex items-center gap-2 p-2 border rounded-lg transition-all w-full md:w-auto ${liked ? "bg-rose-50 border-rose-300" : "bg-white border-gray-300"
+          {/* 버튼 + 좋아요 (관리자면 숨김) */}
+          {user && user.role !== "ADMIN" && (
+            <div className="flex flex-col md:flex-row items-center gap-4 w-full">
+              <button
+                onClick={handleLike}
+                className={`flex items-center gap-2 p-2 border rounded-lg transition-all w-full md:w-auto ${
+                  liked ? "bg-rose-50 border-rose-300" : "bg-white border-gray-300"
                 } hover:cursor-pointer`}
-            >
-              <Heart
-                className={`w-7 h-7 ${liked ? "fill-rose-500 stroke-rose-500" : "stroke-gray-400"
-                  }`}
-              />
-              {/* 좋아요 개수 */}
-              <span
-                className={`text-base font-medium ${liked ? "text-rose-500" : "text-gray-500"
-                  }`}
               >
-                {likeCount}
-              </span>
-            </button>
-            <button
-              onClick={handleAddToCart}
-              className="flex-1 w-full bg-gray-100 text-gray-600 py-3 rounded-lg hover:bg-gray-200 hover:cursor-pointer"
-            >
-              장바구니
-            </button>
-            <button
-              onClick={handleBuyNow}
-              className="flex-1 w-full bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-800 hover:cursor-pointer"
-            >
-              구매하기
-            </button>
-          </div>
+                <Heart
+                  className={`w-7 h-7 ${
+                    liked ? "fill-rose-500 stroke-rose-500" : "stroke-gray-400"
+                  }`}
+                />
+                <span
+                  className={`text-base font-medium ${
+                    liked ? "text-rose-500" : "text-gray-500"
+                  }`}
+                >
+                  {likeCount}
+                </span>
+              </button>
+
+              <button
+                onClick={handleAddToCart}
+                className="flex-1 w-full bg-gray-100 text-gray-600 py-3 rounded-lg hover:bg-gray-200 hover:cursor-pointer"
+              >
+                장바구니
+              </button>
+
+              <button
+                onClick={handleBuyNow}
+                className="flex-1 w-full bg-gray-700 text-white py-3 rounded-lg hover:bg-gray-800 hover:cursor-pointer"
+              >
+                구매하기
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
