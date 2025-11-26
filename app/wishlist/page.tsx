@@ -1,35 +1,52 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trash2 } from "lucide-react";
 import Link from "next/link";
+import { Trash2 } from "lucide-react";
 
-// 테스트용 더미 데이터
-interface Product {
-  id: number;
-  name: string;
-  thumbnail: string;
-  price: number;
-  soldOut?: boolean;
+interface WishlistItem {
+  productId: number;
+  productName: string;
+  mainImg?: string;
+  sellPrice?: number;
 }
 
-const DUMMY_WISHLIST: Product[] = [
-  { id: 1, name: "상품 A", thumbnail: "/images/product1.png", price: 12000 },
-  { id: 2, name: "상품 B", thumbnail: "/images/product2.png", price: 25000, soldOut: true },
-  { id: 3, name: "상품 C", thumbnail: "/images/product3.png", price: 18000 },
-];
-
 export default function WishlistPage() {
-  const [wishlist, setWishlist] = useState<Product[]>([]);
+  const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadWishlist = async () => {
+    try {
+      const res = await fetch("http://localhost:8080/api/like/my", {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error("찜 목록 불러오기 실패");
+
+      const data = await res.json();
+      setWishlist(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // 테스트용 데이터 로드
-    setWishlist(DUMMY_WISHLIST);
+    loadWishlist();
   }, []);
 
-  const removeItem = (id: number) => {
-    setWishlist((prev) => prev.filter((item) => item.id !== id));
+  const removeItem = async (productId: number) => {
+    await fetch(`http://localhost:8080/api/like/toggle/${productId}`, {
+      method: "POST",
+      credentials: "include",
+    });
+
+    loadWishlist();
   };
+
+  if (loading) return <p className="text-center py-10">로딩 중...</p>;
 
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-6">
@@ -44,27 +61,29 @@ export default function WishlistPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
             {wishlist.map((item) => (
               <div
-                key={item.id}
+                key={item.productId}
                 className="bg-white rounded-xl shadow p-4 flex flex-col items-center gap-2"
               >
-                <Link href={`/product/${item.id}`}>
+                <Link href={`/product/${item.productId}`}>
                   <img
-                    src={item.thumbnail || "/images/default_main.png"}
-                    alt={item.name}
+                    src={item.mainImg || "/images/default_main.png"}
+                    alt={item.productName}
                     className="w-full h-40 object-contain rounded-lg"
                   />
                 </Link>
 
-                <p className="text-gray-800 font-medium text-center">{item.name}</p>
+                <p className="text-gray-800 font-medium text-center">
+                  {item.productName}
+                </p>
 
-                <p className="text-black font-bold">{item.price.toLocaleString()}원</p>
-
-                {item.soldOut && (
-                  <p className="text-red-500 font-semibold text-sm">품절</p>
-                )}
+                <p className="text-black font-bold">
+                  {item.sellPrice
+                    ? `${item.sellPrice.toLocaleString()}원`
+                    : ""}
+                </p>
 
                 <button
-                  onClick={() => removeItem(item.id)}
+                  onClick={() => removeItem(item.productId)}
                   className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm mt-2"
                 >
                   <Trash2 size={14} /> 삭제

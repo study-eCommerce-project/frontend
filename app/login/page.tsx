@@ -6,6 +6,7 @@ import { useUser } from "../../context/UserContext";
 
 export default function LoginPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  console.log("[렌더링] LoginPage 컴포넌트 렌더링됨"); // ← 컴포넌트가 제대로 실행되는지
 
   const router = useRouter();
   const { refreshUser } = useUser();
@@ -15,19 +16,28 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log("[이벤트] handleLogin 실행됨"); // ← 버튼 클릭 시 실행 여부 확인
 
     if (!id || !pw) {
       alert("아이디와 비밀번호를 입력하세요.");
+      console.log("[검증] 아이디 또는 비밀번호 없음");
       return;
     }
 
     try {
+      console.log("[FETCH] 요청 준비됨", {
+        email: id.trim(),
+        password: pw.trim(),
+      });
+
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include", // ⭐ 세션 쿠키 받기
         body: JSON.stringify({ email: id.trim(), password: pw.trim() }),
       });
+
+      console.log("[FETCH] 요청 보냄 → 응답 상태:", response.status); // ← fetch가 나갔는지, 응답 상태
 
       if (response.status === 404) {
         alert("존재하지 않는 사용자입니다.");
