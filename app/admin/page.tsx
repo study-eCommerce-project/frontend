@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import CategoryTreeAccordion from "./components/CategoryTreeAccordion";
 import FabAddButton from "./components/FabAddButton";
 
-
 interface Product {
   productId: number;
   productName: string;
@@ -17,10 +16,12 @@ interface Product {
 export default function AdminMainPage() {
   const router = useRouter();
 
+  // 단일 카테고리 선택을 위한 상태
   const [selectedLeaf, setSelectedLeaf] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [categoryTree, setCategoryTree] = useState<any>(null);
+
 
   // 카테고리 트리 로드
   useEffect(() => {
@@ -32,21 +33,20 @@ export default function AdminMainPage() {
     loadTree();
   }, []);
 
-
   // 소분류 선택 시 상품 불러오기
   useEffect(() => {
     if (!selectedLeaf) {
-      setProducts([]);
+      setProducts([]); // 카테고리가 선택되지 않으면 상품 초기화
       return;
     }
 
     const fetchProducts = async () => {
       const API_URL = process.env.NEXT_PUBLIC_API_URL;
-      
+
       setLoading(true);
       try {
         const res = await fetch(
-          `${API_URL}/api/products?category=${selectedLeaf}`
+          `${API_URL}/api/products?category=${selectedLeaf}` // 선택된 카테고리로 상품 필터링
         );
         const data = await res.json();
         setProducts(data);
@@ -60,6 +60,11 @@ export default function AdminMainPage() {
     fetchProducts();
   }, [selectedLeaf]);
 
+  // 카테고리 선택 핸들러
+  const handleCategorySelect = (leafCode: string) => {
+    setSelectedLeaf(leafCode); // 선택된 카테고리 업데이트
+  };
+
   return (
     <div className="flex gap-6 p-6 min-h-screen w-full">
       {/* 🔵 왼쪽 카테고리 트리 */}
@@ -67,13 +72,13 @@ export default function AdminMainPage() {
         {categoryTree ? (
           <CategoryTreeAccordion
             data={categoryTree}
-            onSelect={(leafCode) => setSelectedLeaf(leafCode)}
+            onSelect={handleCategorySelect} // 카테고리 선택 시 핸들러 호출
+            selectedLeaf={selectedLeaf} // 선택된 카테고리 전달
           />
         ) : (
           <p>카테고리 불러오는 중...</p>
         )}
       </div>
-
 
       {/* 🟣 오른쪽 상품 리스트 */}
       <div className="flex-1 bg-white rounded-xl shadow p-4">
@@ -111,10 +116,8 @@ export default function AdminMainPage() {
         )}
       </div>
 
-
       {/* 🟦 플로팅 + 버튼 */}
       <FabAddButton />
-
     </div>
   );
 }

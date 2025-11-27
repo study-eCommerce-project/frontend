@@ -29,11 +29,11 @@ const UserContext = createContext<UserContextType>({
 });
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const API_URL = process.env.NEXT_PUBLIC_API_URL; 
 
   const [user, setUserState] = useState<User | null>(null);
 
-  /** User 상태 업데이트 */
+  /** User 상태 업데이트 (로컬스토리지 금지) */
   const setUser = (data: User | null) => {
     setUserState(data);
   };
@@ -41,15 +41,18 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   /** 세션 기반 로그인 복원 */
   const refreshUser = async () => {
     try {
-      const res = await axios.get(`${API_URL}/api/auth/me`);
+      // axios로 수정: API_URL을 환경변수로 처리
+      const res = await axios.get(`${API_URL}/api/auth/me`, {
+        withCredentials: true, // 쿠키를 포함한 요청 (세션 유지)
+      });
       setUserState(res.data);
     } catch (error) {
-      // 401 → 자동 로그아웃 처리됨 (axiosConfig 사용 가정)
+      // 401이면 axiosConfig가 자동 로그아웃 + redirect
       setUserState(null);
     }
   };
 
-  /** 앱 첫 로드시 로그인 체크 */
+  /** 첫 로드시 세션 기반 로그인 체크 */
   useEffect(() => {
     refreshUser();
   }, []);
