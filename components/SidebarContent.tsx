@@ -62,10 +62,10 @@ export default function SidebarContent({ user, onClose }: SidebarContentProps) {
         <div className="flex items-center gap-5">
           {user && user.role !== "ADMIN" && (
             <>
-              <Link href="mypage/wishlist" onClick={onClose}>
+              <Link href="/mypage/wishlist" onClick={onClose}>
                 <Heart size={22} className="text-gray-600 hover:text-black" />
               </Link>
-              <Link href="mypage/cart" onClick={onClose}>
+              <Link href="/mypage/cart" onClick={onClose}>
                 <ShoppingCart size={22} className="text-gray-600 hover:text-black" />
               </Link>
             </>
