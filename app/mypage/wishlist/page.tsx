@@ -1,9 +1,3 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { Trash2 } from "lucide-react";
-
 /**
  * 📌 [왜 WishlistPage는 별도로 분리/리팩터링할 필요가 없는가?]
  *
@@ -34,66 +28,16 @@ import { Trash2 } from "lucide-react";
  * - WishlistPage는 한 번에 보기 쉽고 기능 범위도 작아서
  *   지금처럼 하나의 컴포넌트 안에서 완결형으로 유지하는 것이 가장 효율적이다.
  */
-interface WishlistItem {
-  productId: number;
-  productName: string;
-  mainImg?: string;
-  sellPrice?: number;
-}
+"use client";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { useWishlist } from "../../../context/WishlistContext";
+import Link from "next/link";
+import { Trash2 } from "lucide-react";
 
 export default function WishlistPage() {
-  const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { likedProducts, toggleWishlist } = useWishlist();
 
-  const loadWishlist = async () => {
-    try {
-      const res = await fetch(`${API_URL}/api/like/my`, {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!res.ok) throw new Error("찜 목록 불러오기 실패");
-
-      const data = await res.json();
-      setWishlist(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadWishlist();
-  }, []);
-
-  const removeItem = async (productId: number) => {
-    try {
-      await fetch(`${API_URL}/api/like/toggle/${productId}`, {
-        method: "POST",
-        credentials: "include",
-      });
-      loadWishlist();
-    } catch (e) {
-      console.error("삭제 실패", e);
-    }
-  };
-
-  if (loading)
-    return (
-      <div className="w-full flex flex-col items-center justify-center py-10">
-        <p className="text-gray-700 mb-3">상품 불러오는 중...</p>
-        <img
-          src="/images/signature_w.png"
-          alt="Loading"
-          className="inline-block w-8 h-8 md:w-20 md:h-20 animate-spin-slow"
-        />
-      </div>
-    );
-
-  if (wishlist.length === 0)
+  if (likedProducts.length === 0)
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <p className="text-gray-600 text-lg">찜한 상품이 없습니다.</p>
@@ -105,32 +49,26 @@ export default function WishlistPage() {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">찜한 상품</h1>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-        {wishlist.map((item) => (
+        {likedProducts.map((productId) => (
           <div
-            key={item.productId}
+            key={productId}
             className="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-4 flex flex-col items-center gap-2"
           >
-            <Link href={`/product/${item.productId}`}>
+            <Link href={`/product/${productId}`}>
               <img
-                src={item.mainImg || "/images/default_main.png"}
-                alt={item.productName}
+                src={`/images/default_main.png`} // 실제 API 연결 시 상품 이미지 적용
+                alt={`상품 ${productId}`}
                 className="w-full h-40 object-contain rounded-xl"
               />
             </Link>
 
             <p className="text-gray-800 font-medium text-center truncate">
-              {item.productName}
+              상품 {productId}
             </p>
 
-            {item.sellPrice && (
-              <p className="text-gray-900 font-bold">
-                {item.sellPrice.toLocaleString()}원
-              </p>
-            )}
-
             <button
-              onClick={() => removeItem(item.productId)}
-              className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm mt-2"
+              onClick={() => toggleWishlist(productId)}
+              className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm mt-2 cursor-pointer"
             >
               <Trash2 size={14} /> 삭제
             </button>
