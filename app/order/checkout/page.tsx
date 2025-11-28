@@ -111,21 +111,28 @@ export default function CheckoutPage() {
       orderDate: new Date().toLocaleString(),
     };
 
-    setLoading(true);
     try {
-      await new Promise(res => setTimeout(res, 1000));
+    const res = await fetch("http://localhost:8080/api/orders/create", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(orderData),
+    });
 
-      // 주문 내역 저장
-      const existingOrders = JSON.parse(localStorage.getItem("orderHistory") || "[]");
-      existingOrders.push(orderData);
-      localStorage.setItem("orderHistory", JSON.stringify(existingOrders));
+        if (!res.ok) {
+        throw new Error("결제 실패 (서버 오류)");
+      }
 
-      sessionStorage.setItem("lastOrder", JSON.stringify(orderData));
-      router.push("/order/complete");
-      sessionStorage.removeItem("checkoutData");
+      const result = await res.json();
+      sessionStorage.setItem("lastOrder", JSON.stringify(result));
+
       clearCart();
+      router.push("/order/complete");
     } catch (err) {
       console.error("결제 실패", err);
+      alert("결제 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
