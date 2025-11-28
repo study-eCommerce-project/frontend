@@ -1,23 +1,25 @@
 "use client";
 import { useState } from "react";
-
-const toFullUrl = (url: string) => {
-  if (!url) return "";
-  if (url.startsWith("http")) return url;
-  return `https://image.msscdn.net${url}`;
-};
+import { Product } from "../types";
 
 interface ProductImagesProps {
-  mainImg?: string;
-  subImages?: string[];
+  product: Product;
 }
 
-export default function ProductImages({ mainImg, subImages }: ProductImagesProps) {
-  const initialMainImg = toFullUrl(mainImg || "/images/default_main.png");
+export default function ProductImages({ product }: ProductImagesProps) {
+  const toFullUrl = (url: string) => {
+    if (!url) return "";
+    if (url.startsWith("http")) return url;
+    return `https://image.msscdn.net${url}`;
+  };
+
+  if (!product.mainImg) return null;
+
+  const initialMainImg = toFullUrl(product.mainImg);
   const [mainImage, setMainImage] = useState(initialMainImg);
 
-  const thumbnails: string[] = subImages?.length
-    ? subImages.map((img) => toFullUrl(img))
+  const thumbnails = product.subImages?.length
+    ? product.subImages.map((img) => toFullUrl(img))
     : [initialMainImg];
 
   return (
@@ -27,10 +29,9 @@ export default function ProductImages({ mainImg, subImages }: ProductImagesProps
           <img
             key={idx}
             src={thumb}
-            alt={`썸네일 ${idx}`}
             className={`w-20 h-20 object-contain rounded border ${
               mainImage === thumb ? "border-gray-800" : "border-gray-300"
-            } hover:cursor-pointer`}
+            } cursor-pointer`}
             onClick={() => setMainImage(thumb)}
           />
         ))}
@@ -39,7 +40,6 @@ export default function ProductImages({ mainImg, subImages }: ProductImagesProps
       <div className="flex-1 flex justify-center items-start">
         <img
           src={mainImage}
-          alt="상품 이미지"
           className="rounded-lg object-contain max-h-[500px] w-full"
         />
       </div>

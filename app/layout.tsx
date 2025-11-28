@@ -1,7 +1,7 @@
 import "./globals.css";
 import { Providers } from "./providers";
 import ClientRoot from "./ClientRoot";
-import { WishlistProvider } from "../context/WishlistContext"; // 경로는 프로젝트 구조에 맞게 조정
+import { WishlistProvider } from "../context/WishlistContext";
 
 export const metadata = {
   title: "YDJ",
