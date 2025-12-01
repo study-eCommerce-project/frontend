@@ -1,17 +1,39 @@
 "use client";
 
 import ProductImages from "./ProductImages";
-import { Product } from "../types";
 import ProductInfo from "./ProductInfo";
+import { Product } from "@/types/product";
 
-export default function ProductDetailTop({ product }: { product: Product }) {
+/**
+ * 상품 상세 상단 컴포넌트
+ * 
+ * 역할:
+ * - 좌측: 상품 이미지(ProductImages)
+ * - 우측: 상품 정보(ProductInfo)
+ * - 전체 레이아웃(grid) 구성
+ */
+interface ProductDetailTopProps {
+  product: Product;
+}
+
+export default function ProductDetailTop({ product }: ProductDetailTopProps) {
+
+  // mainImg 없는 상품 방어 코드 (빈 데이터 대비)
+  if (!product.mainImg) return null;
+
   return (
-    <div className="max-w-6xl mx-auto my-10 bg-white p-8 rounded-xl shadow flex flex-col md:flex-row gap-10">
-      <div className="md:w-1/2">
-        <ProductImages product={product} />
-      </div>
-      <div className="md:w-1/2">
+    <div className="max-w-6xl mx-auto my-10 bg-white p-8 rounded-xl shadow flex flex-col">
+      <div className="grid md:grid-cols-2 gap-10 items-start">
+        
+        {/* 좌측 상품 이미지 */}
+        <ProductImages 
+          mainImg={product.mainImg} 
+          subImages={product.subImages} 
+        />
+
+        {/* 우측 상품 정보 */}
         <ProductInfo product={product} />
+
       </div>
     </div>
   );

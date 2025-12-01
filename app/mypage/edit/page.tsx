@@ -2,6 +2,40 @@
 
 import { useState, useEffect } from "react";
 
+/**
+ * 📌 [왜 분리하지 않고 하나의 컴포넌트로 유지하는가?]
+ *
+ * 이 MyInfoPage는 아래의 이유로 별도 훅/컴포넌트 분리 없이 한 파일로 유지함.
+ *
+ * 1) 단일 도메인(“내 정보 관리”) 기능만 포함
+ *    - 비밀번호/전화번호 수정
+ *    - 배송지 목록 관리
+ *    - 배송지 추가
+ *    모두 "내 정보 관리" 도메인 안에 있는 기능이라 파일 분리가 꼭 필요하지 않음.
+ *
+ * 2) 서버 API가 아닌 localStorage 기반
+ *    - 단순 UI + localStorage 저장 로직만 존재
+ *    - 비즈니스 로직 복잡하지 않음
+ *    - 재사용 될 가능성도 낮음 → 훅 또는 컴포넌트 분리 필요도 낮음
+ *
+ * 3) 분리하면 오히려 구조가 과도하게 복잡해짐
+ *    ex)
+ *      /components
+ *        - UserInfoForm.tsx
+ *        - AddressList.tsx
+ *        - AddressItem.tsx
+ *        - AddressForm.tsx
+ *        - useMyInfo.ts
+ *    → 파일만 많아지고 유지보수 난이도 ↑ (실제 이득 ↓)
+ *
+ * 4) 현재 코드 길이가 적당하여 가독성도 충분함
+ *    - 250줄 내외 → 페이지 하나로 관리해도 무리 없음
+ *
+ * 결론:
+ * ⚠️ API 연동하거나 기능이 크게 늘어나면 분리 고려
+ * 👍 지금 단계에서는 파일 하나로 관리하는 것이 가장 효율적임
+ */
+
 interface UserInfo {
   password: string;
   phone: string;

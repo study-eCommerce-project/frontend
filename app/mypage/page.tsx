@@ -3,6 +3,34 @@ import { useUser } from "../../context/UserContext";
 import Link from "next/link";
 import { User, CreditCard, ShoppingBag, Heart, LogOut, ChevronRight } from "lucide-react";
 
+/**
+ * 📌 [왜 MyPage는 별도로 훅·컴포넌트로 분리할 필요가 없는가?]
+ *
+ * 1) 데이터 로직이 거의 없음
+ *    - user 정보는 UserContext에서 이미 관리
+ *    - 이 페이지는 "조회만" 하고, API 호출이나 로직이 없음
+ *    → 로직 분리 대상 자체가 거의 없음
+ *
+ * 2) 메뉴 목록(menuSections)은 단순한 정적 데이터
+ *    - 클릭 링크와 아이콘 나열만 함
+ *    - 이를 훅이나 constants 폴더로 분리해도 재사용성이 생기지 않음
+ *
+ * 3) UI 컴포넌트 구조도 간단함
+ *    - SummaryCard 정도만 작은 컴포넌트로 분리했는데 이것만으로 충분함
+ *    - 나머지는 단순한 <Link> 리스트 렌더링
+ *
+ * 4) 페이지 자체가 '대시보드(정적 구성)'이기 때문에 
+ *    - 로직·아키텍처적 관점에서 복잡도가 매우 낮음
+ *    - 분리하면 파일 개수만 늘어나고 유지보수성이 떨어짐 (over-engineering)
+ *
+ * 5) 길이도 200줄 미만, 가독성 매우 양호
+ *    - 뷰 + 정적 구조 조합이라 컴포넌트가 하나여도 전체 구조 파악 쉽고 실용적
+ *
+ *  결론:
+ * - MyPage는 "정적 UI + 간단한 user 표시" 구조로 최적화되어 있어
+ *   지금 구조가 가장 깔끔하고 유지보수 친화적이다.
+ */
+
 export default function MyPage() {
   const { user } = useUser();
 

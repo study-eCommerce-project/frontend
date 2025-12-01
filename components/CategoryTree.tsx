@@ -1,7 +1,12 @@
 "use client";
 
+/**
+ * Category 컴포넌트
+ * - 카테고리 트리(대·중·소)를 보여주고
+ * - 소분류(leaf)를 클릭하면 leafCode를 부모에게 전달하는 UI
+ */
 interface CategoryProps {
-  data: any; // 카테고리 트리 전체 데이터
+  data: any; // 카테고리 트리 전체 데이터(대 → 중 → 소)
   onSelect: (leafCode: string) => void; // 선택한 소분류 코드 전달
 }
 
@@ -24,6 +29,8 @@ export default function Category({ data, onSelect }: CategoryProps) {
                   <button
                     key={leafCode}
                     className="text-left hover:text-blue-600"
+                    
+                    // 소분류 클릭 → 선택한 leafCode를 부모로 전달
                     onClick={() => onSelect(leafCode)}
                   >
                     ▸ {leafName}

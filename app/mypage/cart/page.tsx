@@ -5,6 +5,38 @@ import { useCart } from "@/context/CartContext";
 import { Trash2, Plus, Minus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+/**
+ * 📌 [왜 CartPage는 별도로 분리하지 않고 하나의 컴포넌트로 유지하는가?]
+ *
+ * 1) UI 중심 페이지이며 로직 대부분이 CartContext에 이미 분리되어 있음
+ *    - 장바구니 데이터 로딩(loadCart)
+ *    - 수량 변경(updateQuantity)
+ *    - 상품 삭제(deleteItem)
+ *    → 이 핵심 비즈니스 로직은 이미 CartContext에 있음
+ *    → CartPage는 "UI를 보여주는 역할"만 담당 → 그대로 두는 게 가장 효율적
+ *
+ * 2) 계산 로직(totalPrice)도 매우 단순하며 재사용도 거의 없음
+ *    - totalPrice = cart.reduce(...) 는 오직 이 페이지에서만 사용됨
+ *    - 훅으로 따로 빼면 오히려 지나친 분리(Over-engineering)가 됨
+ *
+ * 3) 리스트 렌더링 + UI 조합이 대부분이라 컴포넌트 분리 이득이 적음
+ *    - 장바구니 아이템 리스트를 Item 컴포넌트로 분리할 수도 있으나,
+ *      상태 변경(updateQuantity, deleteItem)이 모두 CartContext에 있어 그대로 사용 가능.
+ *    - 분리하면 props 전달만 늘어나며 복잡성 증가 → 유지보수 효율 ↓
+ *
+ * 4) 페이지 길이가 200~250줄 수준 → 가독성이 크게 떨어지지 않음
+ *    - 더 길어질 경우 컴포넌트 분리를 고려할 수 있으나,
+ *      현재는 불필요한 구조 분리만 생김.
+ *
+ * 5) 장바구니 UI는 대부분 “페이지 단독 구성” 패턴
+ *    - 여러 페이지에서 재사용되지 않음
+ *    - 오직 CartPage에서만 쓰이는 UI라서 분리할 의미가 낮음
+ *
+ *  결론:
+ * - 로직은 이미 Context로 깔끔하게 분리되어 있고
+ * - 남은 부분은 UI 렌더링이라 페이지 하나로 유지하는 것이 가장 안정적이고 간단함.
+ * - 지금 구조가 실무에서 쓰기에도 충분히 좋음!
+ */
 export default function CartPage() {
   const router = useRouter();
   const { cart, initialLoading, deleteItem, updateQuantity } = useCart();

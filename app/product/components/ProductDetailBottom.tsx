@@ -1,53 +1,21 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-
-/** Top과 동일한 절대 경로 변환 */
-const toFullUrl = (url: string) => {
-  if (!url) return "";
-  if (url.startsWith("http")) return url;
-  return `https://image.msscdn.net${url}`;
-};
+import { toFullUrl } from "@/lib/utils/toFullUrl";
+import { useProductDetailTabs } from "@/hooks/useProductDetailTabs";
 
 export default function ProductDetailBottom({ product }: any) {
-  const [activeTab, setActiveTab] = useState("info");
-
-  const infoRef = useRef<HTMLDivElement>(null);
-  const sizeRef = useRef<HTMLDivElement>(null);
-  const recommendRef = useRef<HTMLDivElement>(null);
+  const {
+    activeTab,
+    infoRef,
+    sizeRef,
+    recommendRef,
+    scrollToSection,
+  } = useProductDetailTabs();
 
   /** subImages 절대경로 변환 */
   const subImages: string[] = (product.subImages || [])
     .map((img: string) => toFullUrl(img))
     .filter((v: string) => v);
-
-  const scrollToSection = (ref: any) => {
-    const offset = 80;
-    const top = ref.current!.offsetTop - offset;
-
-    window.scrollTo({
-      top,
-      behavior: "smooth",
-    });
-  };
-
-  // Scroll Spy
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) setActiveTab(e.target.id);
-        });
-      },
-      { rootMargin: "-70px 0px -60% 0px" }
-    );
-
-    [infoRef, sizeRef, recommendRef].forEach((ref) => {
-      if (ref.current) observer.observe(ref.current);
-    });
-
-    return () => observer.disconnect();
-  }, []);
 
   return (
     <div className="bg-white mt-20 rounded-xl shadow px-8 py-10 space-y-14 max-w-5xl mx-auto">

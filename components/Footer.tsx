@@ -3,6 +3,14 @@
 import Link from "next/link";
 import { Facebook, Instagram, Mail, Phone } from "lucide-react";
 
+
+  /* ------------------------------------------------------------------
+     Footer 컴포넌트  
+     - 모든 페이지 하단에 고정적으로 표시되는 글로벌 푸터
+     - 회사/브랜드 소개, 빠른 링크, 연락처 & SNS 링크로 구성
+     - 별도의 상태 없음 → 단순 UI 컴포넌트
+     ------------------------------------------------------------------ */
+
 export default function Footer() {
   return (
     <footer className="bg-gray-900 text-white w-full">
