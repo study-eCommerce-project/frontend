@@ -1,3 +1,14 @@
+/**
+ * RootLayout의 역할
+ * 1) 페이지 전체에 공통적인 HTML 구조 제공
+ * 2) metadata, <html>, <body> 같은 '문서 레벨' 설정
+ * 3) 전역 Provider를 감싸되, Server Component 제약을 지켜야 함
+ *
+ * Providers + WishlistProvider + ClientRoot 구조 이유
+ * - Providers(User + Cart)는 "use client"라서 Client Component 필요
+ * - WishlistProvider 역시 클라이언트 훅을 사용하므로 Providers 영역 안에서 실행해야 함
+ * - ClientRoot는 전역 상태 초기화나 Layout hydration 같은 클라이언트 사이드 작업을 담당.
+ */
 import "./globals.css";
 import { Providers } from "./providers";
 import ClientRoot from "./ClientRoot";
@@ -15,7 +26,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <title>{metadata.title}</title>
         <meta name="description" content={metadata.description} />
       </head>
+
+      {/** body는 Server Component지만, 내부에 Client Component는 넣어도 됨 */}
       <body className="flex flex-col min-h-screen bg-gray-50 text-gray-900">
+
+        {/**
+         * 모든 글로벌 Provider는 여기에서만 감싸면 된다!
+         * - 아래 순서가 유지되어야 정상 작동:
+         *   1) Providers(User, Cart)
+         *   2) WishlistProvider
+         *   3) ClientRoot
+         */}
         <Providers>
           <WishlistProvider>
             <ClientRoot>

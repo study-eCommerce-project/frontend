@@ -1,155 +1,49 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useProductInfoLogic } from "@/hooks/useProductInfoLogic";
+import { Product } from "@/types/product";
+import { useUser } from "@/context/UserContext";
+import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 import { Heart, Plus, Minus, X } from "lucide-react";
-import { useUser } from "../../../context/UserContext";
-import { useCart } from "../../../context/CartContext";
 
-export interface Option {
-  optionId: number;
-  value: string;
-}
-
-export interface SelectedOption extends Option {
-  count: number;
-}
-
-export interface Product {
-  subImages: string[] | undefined;
-  productId: number;
-  productName: string;
-  mainImg?: string;
-  consumerPrice?: number;
-  sellPrice: number;
-  stock: number;
-  isOption?: number;
-  options?: { optionId: number; optionValue: string }[];
-  categoryPath: string;
-  likeCount?: number;
-  userLiked?: boolean;
-}
+/**
+ * 상품 상세 정보 UI 컴포넌트
+ *
+ * - 상품명/가격 표시
+ * - 카테고리 경로 표시
+ * - 옵션 선택 UI 처리
+ * - 좋아요 버튼
+ * - 장바구니 / 구매하기 버튼
+ *
+ * ※ 모든 비즈니스 로직은 useProductInfoLogic 훅으로 분리됨
+ */
 
 export default function ProductInfo({ product }: { product: Product }) {
   const router = useRouter();
   const { user } = useUser();
   const { addToCart } = useCart();
 
-  const [selectedOptions, setSelectedOptions] = useState<SelectedOption[]>([]);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  /** 좋아요 */
-  const [isLiked, setIsLiked] = useState<boolean>(!!product.userLiked);
-  const [likesCount, setLikesCount] = useState<number>(product.likeCount || 0);
-  const [likeLoading, setLikeLoading] = useState(false);
-
-  const handleLike = async () => {
-    if (!user) return router.push("/login"); // 로그인 체크
-    if (likeLoading) return; // 중복 클릭 방지
-
-    setLikeLoading(true);
-    const prevLiked = isLiked;
-    const prevCount = likesCount;
-
-    try {
-      const res = await fetch(`/api/products/${product.productId}/like`, {
-        method: 'POST',
-      });
-      if (!res.ok) throw new Error('Like request failed');
-
-      const data = await res.json();
-      // 서버에서 liked(boolean)와 likes(number) 반환 가정
-      setIsLiked(data.liked);
-      setLikesCount(data.likes);
-    } catch (err) {
-      console.error(err);
-      alert('좋아요 처리 실패');
-      // 실패하면 이전 상태 복원
-      setIsLiked(prevLiked);
-      setLikesCount(prevCount);
-    } finally {
-      setLikeLoading(false);
-    }
-  };
-
-  /** 옵션 선택 */
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handleSelectOption = (opt: Option) => {
-    if (selectedOptions.some((o) => o.optionId === opt.optionId)) {
-      alert("이미 선택된 옵션입니다.");
-      return;
-    }
-    setSelectedOptions((prev) => [...prev, { ...opt, count: 1 }]);
-    setDropdownOpen(false);
-  };
-
-  /** 장바구니 */
-  const handleAddToCart = async () => {
-    if (!user) return router.push("/login");
-    if (product.isOption && selectedOptions.length === 0) return alert("옵션을 선택해주세요!");
-
-    if (product.isOption) {
-      for (const opt of selectedOptions) {
-        await addToCart(
-          {
-            productId: product.productId,
-            productName: product.productName,
-            sellPrice: product.sellPrice,
-            stock: product.stock,
-            mainImg: product.mainImg,
-          },
-          opt.optionId,
-          opt.count
-        );
-      }
-    } else {
-      await addToCart(
-        {
-          productId: product.productId,
-          productName: product.productName,
-          sellPrice: product.sellPrice,
-          stock: product.stock,
-          mainImg: product.mainImg,
-        },
-        null,
-        1
-      );
-    }
-
-    if (window.confirm("장바구니에 담았습니다.\n장바구니 페이지로 이동할까요?")) {
-      router.push("/mypage/cart");
-    }
-  };
-
-  /** 구매하기 */
-  const handleBuyNow = () => {
-    if (!user) return router.push("/login");
-    if (product.isOption && selectedOptions.length === 0) return alert("옵션을 선택해주세요!");
-    const orderInfo = {
-      productId: product.productId,
-      productName: product.productName,
-      mainImg: product.mainImg,
-      sellPrice: product.sellPrice,
-      options: selectedOptions,
-    };
-    sessionStorage.setItem("checkoutData", JSON.stringify(orderInfo));
-    router.push("/order/checkout");
-  };
+  // 상품 상세에 필요한 로직을 모두 커스텀 훅에서 가져옴
+  const {
+    selectedOptions,
+    setSelectedOptions,
+    dropdownOpen,
+    setDropdownOpen,
+    dropdownRef,
+    handleSelectOption,
+    isLiked,
+    likesCount,
+    likeLoading,
+    handleLike,
+    handleAddToCart,
+    handleBuyNow,
+  } = useProductInfoLogic(product, user, addToCart, router);
 
   return (
     <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-6">
 
       {/* 카테고리 */}
-      {product.categoryPath && (
+      {/* {product.categoryPath && (
         <div className="text-sm text-gray-500 mb-2 flex items-center gap-2">
           {product.categoryPath.split(">").map((cat, idx) => (
             <span key={idx} className="flex items-center gap-2">
@@ -160,12 +54,30 @@ export default function ProductInfo({ product }: { product: Product }) {
             </span>
           ))}
         </div>
+      )} */}
+
+      {/* ----------------------------------------------------
+          카테고리 경로 표시
+          ex) 남성의류 > 상의 > 후드티
+      ---------------------------------------------------- */}
+      {product.categoryPath && (
+        <div className="text-sm text-gray-500 mb-2 flex items-center gap-2">
+          {product.categoryPath.split(">").map((cat, idx, arr) => (
+            <span key={idx} className="flex items-center gap-2">
+              <span className="text-gray-600">{cat.trim()}</span>
+              {/* 마지막 항목 뒤에는 "/" 표시 안 함 */}
+              {idx < arr.length - 1 && (
+                <span className="text-gray-400">/</span>
+              )}
+            </span>
+          ))}
+        </div>
       )}
 
       {/* 상품명 */}
       <h1 className="text-3xl font-bold text-black">{product.productName}</h1>
 
-      {/* 가격 */}
+      {/* 가격 정보 (할인율, 소비자가, 판매가) */}
       <div className="mb-6 text-center md:text-left space-y-1">
         {product.consumerPrice && product.consumerPrice > product.sellPrice && (
           <span className="text-red-500 text-lg font-semibold">
@@ -184,7 +96,11 @@ export default function ProductInfo({ product }: { product: Product }) {
         <p className="text-gray-600 text-sm">재고: {product.stock}개</p>
       </div>
 
-      {/* 옵션 선택 */}
+      {/* ----------------------------------------------------
+          옵션 선택 영역
+          - 옵션 드롭다운
+          - 옵션 선택 시 selectedOptions에 추가됨
+      ---------------------------------------------------- */}
       {product.isOption && product.options?.length && (
         <div className="mb-6 relative w-full" ref={dropdownRef}>
           <label className="block text-gray-700 mb-2 font-medium">옵션 선택</label>
@@ -201,11 +117,16 @@ export default function ProductInfo({ product }: { product: Product }) {
               {product.options.map((opt) => (
                 <li
                   key={opt.optionId}
-                  onClick={() => handleSelectOption({ optionId: opt.optionId, value: opt.optionValue })}
+                  onClick={() =>
+                      handleSelectOption({
+                        optionId: opt.optionId,
+                        value: opt.value  
+                      })
+                    }
                   className={`p-2 hover:bg-gray-100 cursor-pointer ${selectedOptions.some((o) => o.optionId === opt.optionId) ? "bg-gray-200" : ""
                     }`}
                 >
-                  {opt.optionValue}
+                  {opt.value}
                 </li>
               ))}
             </ul>
@@ -213,7 +134,11 @@ export default function ProductInfo({ product }: { product: Product }) {
         </div>
       )}
 
-      {/* 선택 옵션 */}
+      {/* ----------------------------------------------------
+          선택된 옵션 목록
+          - 수량 + / -
+          - 옵션 제거
+      ---------------------------------------------------- */}
       <div className="flex flex-col gap-4 mb-6 w-full">
         {selectedOptions.map((item) => (
           <div
@@ -221,7 +146,10 @@ export default function ProductInfo({ product }: { product: Product }) {
             className="border p-4 rounded-xl shadow flex justify-between items-center w-full bg-white"
           >
             <div className="flex-1">
+              {/* 옵션명 */}
               <p className="font-medium text-black">{item.value}</p>
+              
+              {/* 수량 조절 */}
               <div className="flex items-center gap-3 mt-2">
                 <button
                   onClick={() =>
@@ -250,6 +178,8 @@ export default function ProductInfo({ product }: { product: Product }) {
                 </button>
               </div>
             </div>
+
+            {/* 옵션 삭제 */}
             <button
               onClick={() => setSelectedOptions((prev) => prev.filter((p) => p.optionId !== item.optionId))}
               className="text-gray-400 hover:text-black transition ml-4"
@@ -260,8 +190,11 @@ export default function ProductInfo({ product }: { product: Product }) {
         ))}
       </div>
 
-      {/* 버튼 */}
+      {/* ----------------------------------------------------
+          좋아요 버튼 + 장바구니 + 구매하기
+      ---------------------------------------------------- */}
       <div className="flex flex-col md:flex-row items-center gap-4 w-full">
+        {/* 좋아요 */}
         <button
           onClick={handleLike}
           className={`flex items-center gap-2 p-2 border rounded-lg w-full md:w-auto transition cursor-pointer ${isLiked ? "bg-rose-50 border-rose-300" : "bg-white border-gray-300"} hover:ring-2 hover:ring-black`}
@@ -272,6 +205,7 @@ export default function ProductInfo({ product }: { product: Product }) {
           </span>
         </button>
 
+        {/* 장바구니 */}
         <button
           onClick={handleAddToCart}
           className="flex-1 w-full bg-black text-white py-3 rounded-xl hover:bg-gray-900 transition cursor-pointer"
@@ -279,6 +213,7 @@ export default function ProductInfo({ product }: { product: Product }) {
           장바구니
         </button>
 
+        {/* 구매하기 */}
         <button
           onClick={handleBuyNow}
           className="flex-1 w-full bg-black text-white py-3 rounded-xl hover:bg-gray-900 transition cursor-pointer"

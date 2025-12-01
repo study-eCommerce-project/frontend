@@ -1,8 +1,12 @@
 import axios from "axios";
 
+// API 기본 주소 설정 (중요!!)
+axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL;  
+
 // 세션/쿠키 자동 포함
 axios.defaults.withCredentials = true;
 
+// 오류 인터셉터 그대로 유지
 axios.interceptors.response.use(
   (response) => response,
   (error) => {

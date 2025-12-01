@@ -95,10 +95,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
    * - 서버 요청 후 debouncedLoadCart만 호출
    * -------------------------------------- */
   function addToCart(productId: number, optionId: number | null, quantity: number) {
+    console.log("addToCart payload:", { productId, optionId, quantity });
+
     if (isAdmin || !user) return;
 
     axios
-      .post(`${API_URL}/api/cart`, { productId, optionId, quantity })
+      .post(`/api/cart`, { productId, optionId, quantity })
       .then(() => debouncedLoadCart())
       .catch((err) => console.error("장바구니 담기 실패:", err));
   }
