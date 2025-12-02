@@ -51,11 +51,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-
-        {/* 제목 */}
-
-
-        {/* 로그인 카드 */}
         <form
           onSubmit={handleLogin}
           className="border border-gray-200 rounded-xl p-8 shadow-sm bg-white"
@@ -63,23 +58,21 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold text-center mb-8 text-gray-900">
             로그인
           </h1>
-          
+
           {/* 아이디 */}
-          <input
-            type="text"
+          <InputBox
             value={id}
-            onChange={(e) => setId(e.target.value)}
-            placeholder="아이디(이메일)"
-            className="w-full p-3 border border-gray-300 rounded-lg text-black placeholder-gray-400 mb-4 focus:ring-2 focus:ring-black outline-none"
+            onChange={setId}
+            placeholder="이메일"
+            type="text"
           />
 
           {/* 비밀번호 */}
-          <input
-            type="password"
+          <InputBox
             value={pw}
-            onChange={(e) => setPw(e.target.value)}
+            onChange={setPw}
             placeholder="비밀번호"
-            className="w-full p-3 border border-gray-300 rounded-lg text-black placeholder-gray-400 mb-6 focus:ring-2 focus:ring-black outline-none"
+            type="password"
           />
 
           {/* 로그인 버튼 */}
@@ -89,26 +82,34 @@ export default function LoginPage() {
           >
             로그인
           </button>
-
-          {/* 하단 링크 */}
-          <div className="flex justify-between items-center mt-5 text-sm text-gray-500">
-            <button
-              type="button"
-              onClick={() => router.push("#")}
-              className="hover:text-black cursor-pointer"
-            >
-              비밀번호 찾기
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push("/join")}
-              className="hover:text-black cursor-pointer"
-            >
-              회원가입
-            </button>
-          </div>
         </form>
       </div>
+    </div>
+  );
+}
+function InputBox({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+}: {
+  label?: string; // 로그인에서는 label 생략 가능
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  type?: string;
+}) {
+  return (
+    <div className="mb-4">
+      {label && <label className="block text-gray-600 text-sm mb-1">{label}</label>}
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full p-3 border border-gray-300 rounded-lg text-black placeholder-gray-400 outline-none focus:ring-2 focus:ring-black"
+      />
     </div>
   );
 }

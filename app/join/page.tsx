@@ -73,8 +73,21 @@ export default function Signup() {
     }
   };
 
+  // 전화번호 자동 하이픈
+  const handlePhoneChange = (value: string) => {
+    const number = value.replace(/[^0-9]/g, "");
+    let formatted = "";
+
+    if (number.length < 4) formatted = number;
+    else if (number.length < 7) formatted = number.substr(0, 3) + "-" + number.substr(3);
+    else if (number.length < 11) formatted = number.substr(0, 3) + "-" + number.substr(3, 3) + "-" + number.substr(6);
+    else formatted = number.substr(0, 3) + "-" + number.substr(3, 4) + "-" + number.substr(7);
+
+    setPhone(formatted);
+  };
+
   return (
-    <div className="min-h-screen flex justify-center items-center bg-[#f5f5f5] px-4">
+    <div className="min-h-screen flex justify-center items-center px-4">
       <form
         onSubmit={handleSignup}
         className="w-full max-w-md bg-white border border-gray-200 rounded-xl p-10 shadow-sm flex flex-col gap-6"
@@ -95,8 +108,8 @@ export default function Signup() {
         <InputBox
           label="전화번호"
           value={phone}
-          onChange={setPhone}
-          placeholder="010-1234-5678"
+          onChange={handlePhoneChange}
+          placeholder="핸드폰번호('-'없이 입력)"
         />
 
         {/* 이메일 */}
@@ -142,26 +155,22 @@ export default function Signup() {
             <button
               type="button"
               onClick={handleSearchAddress}
-              className="px-3 bg-black text-white rounded-lg cursor-pointer hover:bg-gray-800"
+              className="px-3 border border-black rounded-lg cursor-pointer hover:bg-black hover:text-white transition"
             >
               검색
             </button>
           </div>
 
-          <input
-            type="text"
+          <InputBox
             value={addressDetail}
-            onChange={(e) => setAddressDetail(e.target.value)}
+            onChange={setAddressDetail}
             placeholder="상세주소 입력"
-            className="w-full mt-3 p-3 border border-gray-300 rounded-lg text-black outline-none"
           />
         </div>
 
-        {/* Sign Up Button */}
         <button
           type="submit"
-          className="w-full p-3 mt-2 text-center border border-black text-black rounded-lg font-medium 
-                     hover:bg-black hover:text-white transition cursor-pointer"
+          className="w-full py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-900 transition cursor-pointer"
         >
           회원가입
         </button>
@@ -171,24 +180,27 @@ export default function Signup() {
 }
 
 //////////////////////////////////////////////
-// 🔹 인풋 UI 컴포넌트 (반복 줄이기)
+// 🔹 Input UI 컴포넌트 (재사용)
 //////////////////////////////////////////////
+interface InputBoxProps {
+  label?: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  type?: string;
+}
+
 function InputBox({
   label,
   value,
   onChange,
   placeholder,
   type = "text",
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder: string;
-  type?: string;
-}) {
+}: InputBoxProps) {
   return (
     <div>
       <label className="block text-gray-600 text-sm mb-1">{label}</label>
+
       <input
         type={type}
         value={value}
