@@ -45,7 +45,7 @@ export default function WishlistPage() {
     );
   }
 
-  if (likedProducts.length === 0) {
+  if (!likedProducts.length) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <p className="text-gray-600 text-lg">찜한 상품이 없습니다.</p>

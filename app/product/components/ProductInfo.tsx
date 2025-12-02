@@ -1,15 +1,6 @@
 "use client";
-<<<<<<< HEAD
 
 import { useState, useRef, useEffect } from "react";
-=======
-import { useProductInfoLogic } from "@/hooks/useProductInfoLogic";
-import { Product } from "@/types/product";
-import { useUser } from "@/context/UserContext";
-import { useCart } from "@/context/CartContext";
-import { useWishlist } from "@/context/WishlistContext";
-import { useRouter } from "next/navigation";
->>>>>>> main
 import { Heart, Plus, Minus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUser } from "../../../context/UserContext";
@@ -52,7 +43,6 @@ export default function ProductInfo({ product }: Props) {
   const router = useRouter();
   const { user } = useUser();
   const { addToCart } = useCart();
-<<<<<<< HEAD
   const { likedProducts, toggleWishlist } = useWishlist();
 
   const [price, setPrice] = useState(product.sellPrice);
@@ -148,28 +138,6 @@ export default function ProductInfo({ product }: Props) {
     sessionStorage.setItem("checkoutData", JSON.stringify(orderInfo));
     router.push("/order/checkout");
   };
-=======
-  const { toggleWishlist } = useWishlist();
-
-  // 상품 상세에 필요한 로직을 모두 커스텀 훅에서 가져옴
-  const {
-    selectedOptions,
-    setSelectedOptions,
-    dropdownOpen,
-    setDropdownOpen,
-    dropdownRef,
-    handleSelectOption,
-    // isLiked,
-    // likesCount,
-    // likeLoading,
-    liked,
-    likeCount,
-    likeLoading,
-    handleLike,
-    handleAddToCart,
-    handleBuyNow,
-  } = useProductInfoLogic(product, user, addToCart, router, toggleWishlist);
->>>>>>> main
 
   return (
     <div className="flex flex-col">
@@ -288,7 +256,6 @@ export default function ProductInfo({ product }: Props) {
 
       {/* 버튼 */}
       <div className="flex flex-col md:flex-row items-center gap-4 w-full">
-<<<<<<< HEAD
         {/* 좋아요 버튼 */}
         <button
           onClick={handleToggleLike}
@@ -299,16 +266,6 @@ export default function ProductInfo({ product }: Props) {
           <Heart
             className={`w-7 h-7 ${liked ? "fill-rose-500 stroke-rose-500" : "stroke-gray-400"}`}
             style={{ transition: "all 0.2s" }}
-=======
-        {/* 좋아요 */}
-        <button onClick={handleLike}
-          className={`flex items-center gap-2 p-2 border rounded-lg transition-all w-full md:w-auto ${
-            liked ? "bg-rose-50 border-rose-300" : "bg-white border-gray-300"
-          }`}
-        >
-          <Heart
-            className={`w-7 h-7 ${liked ? "fill-rose-500 stroke-rose-500" : "stroke-gray-400"}`}
->>>>>>> main
           />
           <span className={`text-base font-medium ${liked ? "text-rose-500" : "text-gray-500"}`}>
             {likeCount.toLocaleString()}
