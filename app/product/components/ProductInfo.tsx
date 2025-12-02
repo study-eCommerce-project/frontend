@@ -3,6 +3,7 @@ import { useProductInfoLogic } from "@/hooks/useProductInfoLogic";
 import { Product } from "@/types/product";
 import { useUser } from "@/context/UserContext";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { useRouter } from "next/navigation";
 import { Heart, Plus, Minus, X } from "lucide-react";
 
@@ -22,6 +23,7 @@ export default function ProductInfo({ product }: { product: Product }) {
   const router = useRouter();
   const { user } = useUser();
   const { addToCart } = useCart();
+  const { toggleWishlist } = useWishlist();
 
   // 상품 상세에 필요한 로직을 모두 커스텀 훅에서 가져옴
   const {
@@ -31,13 +33,16 @@ export default function ProductInfo({ product }: { product: Product }) {
     setDropdownOpen,
     dropdownRef,
     handleSelectOption,
-    isLiked,
-    likesCount,
+    // isLiked,
+    // likesCount,
+    // likeLoading,
+    liked,
+    likeCount,
     likeLoading,
     handleLike,
     handleAddToCart,
     handleBuyNow,
-  } = useProductInfoLogic(product, user, addToCart, router);
+  } = useProductInfoLogic(product, user, addToCart, router, toggleWishlist);
 
   return (
     <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-6">
@@ -195,13 +200,16 @@ export default function ProductInfo({ product }: { product: Product }) {
       ---------------------------------------------------- */}
       <div className="flex flex-col md:flex-row items-center gap-4 w-full">
         {/* 좋아요 */}
-        <button
-          onClick={handleLike}
-          className={`flex items-center gap-2 p-2 border rounded-lg w-full md:w-auto transition cursor-pointer ${isLiked ? "bg-rose-50 border-rose-300" : "bg-white border-gray-300"} hover:ring-2 hover:ring-black`}
+        <button onClick={handleLike}
+          className={`flex items-center gap-2 p-2 border rounded-lg transition-all w-full md:w-auto ${
+            liked ? "bg-rose-50 border-rose-300" : "bg-white border-gray-300"
+          }`}
         >
-          <Heart className={`w-7 h-7 ${isLiked ? "fill-rose-500 stroke-rose-500" : "stroke-gray-400"}`} />
-          <span className={`text-base font-medium ${isLiked ? "text-rose-500" : "text-gray-500"}`}>
-            {likesCount}
+          <Heart
+            className={`w-7 h-7 ${liked ? "fill-rose-500 stroke-rose-500" : "stroke-gray-400"}`}
+          />
+          <span className={`text-base font-medium ${liked ? "text-rose-500" : "text-gray-500"}`}>
+            {likeCount.toLocaleString()}
           </span>
         </button>
 

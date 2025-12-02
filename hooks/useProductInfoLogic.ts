@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { toggleLike } from "@/lib/api/product";
 import { SelectedOption, Option, Product } from "@/types/product";
 import type { User } from "@/context/UserContext";
-import axios from "axios";
 
 /**
  * 상품 상세에서 필요한 모든 비즈니스 로직을 담당하는 커스텀 훅
@@ -24,7 +23,8 @@ export function useProductInfoLogic(
   product: Product,     // 상품 정보
   user: User | null,    // 현재 로그인한 사용자
   addToCart: any,       // CartContext에서 제공된 장바구니 추가 함수
-  router: any           // next/navigation router
+  router: any,           // next/navigation router
+  toggleWishlist?: any  // 있으면 같이 호출
 ) {
 
   /** ----------------------------------------
@@ -42,35 +42,38 @@ export function useProductInfoLogic(
   /** ----------------------------------------
    * 좋아요 관련 상태
    * ---------------------------------------- */
-  // 좋아요 여부 (초기값은 product.userLiked)
-  const [isLiked, setIsLiked] = useState(!!product.userLiked);
-
-  // 좋아요 숫자
-  const [likesCount, setLikesCount] = useState(product.likeCount || 0);
-
-  // 좋아요 요청 중인지 (중복 클릭 방지)
+  const [liked, setLiked] = useState(product.userLiked ?? false);
+  const [likeCount, setLikeCount] = useState(product.likeCount ?? 0);
   const [likeLoading, setLikeLoading] = useState(false);
 
-  /**
-   * 좋아요 토글 함수
-   * - 로그인 안되어 있으면 로그인 페이지로 이동
-   * - toggleLike API 호출
-   * - 성공 시 liked/likesCount 갱신
-   */
   const handleLike = async () => {
-    if (!user) return router.push("/login");  // 비로그인 → 로그인 유도
-    if (likeLoading) return;                  // 중복 클릭 방지
+    if (!user) {
+      alert("로그인이 필요합니다.");
+      router.push("/login");
+      return;
+    }
+    if (likeLoading) return; // 중복 클릭 방지
 
-    setLikeLoading(true);
     try {
+      setLikeLoading(true);
+
+      // 백엔드에서 토글 처리
       const data = await toggleLike(product.productId);
-      setIsLiked(data.liked);
-      setLikesCount(data.likes);
+      // data = { liked: boolean, likes: number }
+
+      setLiked(data.liked);      // UI 반영
+      setLikeCount(data.likes);  // 숫자 반영
+
+      // 프론트 전체에서 찜 목록 동기화하려면:
+      toggleWishlist(product.productId);
+
+    } catch (err) {
+      console.error("좋아요 실패:", err);
     } finally {
       setLikeLoading(false);
     }
   };
-
+    
   /**
    * 옵션 선택
    * - 이미 선택한 옵션이면 추가되지 않도록 체크
@@ -167,8 +170,12 @@ export function useProductInfoLogic(
     handleSelectOption,
 
     // 좋아요 관련
-    isLiked,
-    likesCount,
+    // isLiked,
+    // likesCount,
+    // likeLoading,
+    // handleLike,
+    liked,
+    likeCount,
     likeLoading,
     handleLike,
 

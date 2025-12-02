@@ -47,6 +47,7 @@ export async function fetchProductDetail(id: number) {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const res = await fetch(`${API_URL}/api/products/${id}/detail`, {
     credentials: "include",  // 세션 기반 로그인 유지
+    cache: "no-store"        // 캐싱 금지 → 항상 최신 데이터 받음
   });
   return res.json();
 }
@@ -64,8 +65,9 @@ export async function toggleLike(productId: number) {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const res = await fetch(`${API_URL}/api/like/toggle/${productId}`, {
-    method: "POST",
-    credentials: "include",
+      method: "POST",
+      credentials: "include",
+      cache: "no-store"  // 캐시 제거 -> 회원이 좋아요한 상품 확인을 위함
   });
 
   if (!res.ok) throw new Error("Like request failed");
