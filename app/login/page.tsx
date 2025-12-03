@@ -32,7 +32,7 @@ export default function LoginPage() {
 
       const me = response.data;
 
-      if (me.role === "ADMIN") router.push("/admin/list");
+      if (me.role === "ADMIN") router.push("/admin");
       else router.push("/");
 
     } catch (error: any) {
