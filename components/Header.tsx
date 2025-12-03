@@ -10,6 +10,7 @@ import Sidebar from "./Sidebar";
 import SidebarContent from "./SidebarContent";
 
 export default function Header() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const { user, setUser } = useUser();
   const { loadCart } = useCart();   // 🔥 장바구니 초기화용
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:8080/api/logout", {
+      await fetch(`${API_URL}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
       });
