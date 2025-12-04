@@ -82,6 +82,13 @@ export default function ProductInfo({ product }: { product: Product }) {
         )}
         <p className="text-3xl font-bold text-black">{product.sellPrice?.toLocaleString()}원</p>
         <p className="text-gray-600 text-sm">재고: {product.stock}개</p>
+        
+        {/* 🔥 옵션이 없고 재고가 0이면 품절 표시 */}
+        {!product.isOption && product.stock === 0 && (
+          <p className="text-red-500 font-semibold text-base mt-1">
+            품절된 상품입니다
+          </p>
+        )}
       </div>
 
       {/* 옵션 선택 영역 */}
