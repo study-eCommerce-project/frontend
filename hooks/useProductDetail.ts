@@ -34,10 +34,11 @@ export function useProductDetail(id: number) {
 
         // 백엔드에서 { optionId, optionValue } 형태로 옴
         const mappedProduct: Product = {
-          ...data,  // 기존 데이터 복사
+          ...data,
           options: data.options?.map((opt: any) => ({
             optionId: opt.optionId,
-            optionValue: opt.optionValue,  
+            optionValue: opt.optionValue,
+            stock: opt.stock,       // ⭐ 이거 추가
           })),
         };
 

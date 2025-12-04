@@ -163,13 +163,13 @@ export default function ProductInfo({ product }: { product: Product }) {
                           <span className="text-sm font-semibold text-gray-700">
                             {Number(opt.sellPrice).toLocaleString()}원
                           </span>
-
-                          {isSoldOut ? (
-                            <span className="text-red-500 text-xs font-semibold">품절</span>
-                          ) : (
-                            <span className="text-gray-400 text-xs">{opt.stock}개</span>
-                          )}
                         </div>
+                        
+                        {isSoldOut ? (
+                          <span className="text-red-500 text-xs font-semibold">품절</span>
+                        ) : (
+                          <span className="text-base font-semibold text-gray-700">{opt.stock}개</span>
+                        )}
                       </li>
                     );
                   })}
