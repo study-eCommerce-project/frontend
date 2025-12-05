@@ -1,75 +1,59 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import React, { useState } from "react";
 
 interface MultiImageUploadProps {
   images: string[];
   onChange: (imgs: string[]) => void;
 }
 
-export default function MultiImageUpload({ images, onChange }: MultiImageUploadProps) {
-  const [previews, setPreviews] = useState<string[]>(images || []);
+const MultiImageUpload: React.FC<MultiImageUploadProps> = ({ images, onChange }) => {
+  const [newImageUrl, setNewImageUrl] = useState("");
 
-  useEffect(() => {
-    setPreviews(images || []);
-  }, [images]);
-
-  const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return;
-    const filesArray = Array.from(e.target.files);
-
-    filesArray.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        setPreviews((prev) => {
-          const updated = [...prev, result];
-          onChange(updated);
-          return updated;
-        });
-      };
-      reader.readAsDataURL(file);
-    });
-
-    // 같은 파일 재선택 가능하도록 초기화
-    e.target.value = "";
+  // 새로운 이미지 URL을 추가하는 함수
+  const handleAddImage = () => {
+    if (newImageUrl) {
+      onChange([...images, newImageUrl]);  // 기존 이미지 배열에 새로운 URL 추가
+      setNewImageUrl("");  // URL 입력 필드 초기화
+    }
   };
 
-  const removeImage = (idx: number) => {
-    const updated = previews.filter((_, i) => i !== idx);
-    setPreviews(updated);
-    onChange(updated);
+  // 이미지 URL을 제거하는 함수
+  const handleRemoveImage = (imageUrl: string) => {
+    onChange(images.filter((img) => img !== imageUrl));
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      {/* 파일 추가 버튼 */}
-      <label className="w-full cursor-pointer border border-gray-300 p-2 rounded-lg text-center bg-gray-100 hover:bg-gray-200 transition">
-        + 이미지 추가
+    <div>
+      <div className="flex gap-2 mb-4">
         <input
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={handleFiles}
-          className="hidden"
+          type="text"
+          value={newImageUrl}
+          onChange={(e) => setNewImageUrl(e.target.value)}
+          placeholder="이미지 URL을 입력하세요"
+          className="border p-2 w-full"
         />
-      </label>
-
-      {/* 썸네일 */}
-      <div className="flex gap-2 flex-wrap mt-2">
-        {previews.map((img, idx) => (
-          <div key={idx} className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200">
-            <img src={img} alt={`sub-img-${idx}`} className="w-full h-full object-cover" />
+        <button
+          onClick={handleAddImage}
+          className="bg-blue-500 text-white p-2 rounded"
+        >
+          추가
+        </button>
+      </div>
+      
+      <div className="flex gap-2">
+        {images.map((img, idx) => (
+          <div key={idx} className="flex items-center gap-2">
+            <img src={img} alt={`sub-image-${idx}`} className="w-24 h-24 object-cover" />
             <button
-              type="button"
-              onClick={() => removeImage(idx)}
-              className="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer"
+              onClick={() => handleRemoveImage(img)}
+              className="bg-red-500 text-white p-2 rounded"
             >
-              <X size={14} />
+              삭제
             </button>
           </div>
         ))}
       </div>
     </div>
   );
-}
+};
+
+export default MultiImageUpload;

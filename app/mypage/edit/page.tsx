@@ -7,6 +7,7 @@ interface MemberInfo {
   phone: string;
   address: string;
   addressDetail: string;
+  zipcode: string;
 }
 
 interface Address {
@@ -15,6 +16,7 @@ interface Address {
   phone: string;
   address: string;
   detail: string;
+  zipcode: string;
   isDefault: boolean;
   isVirtual?: boolean; // 회원가입 기본주소 여부 표시
 }
@@ -25,6 +27,7 @@ export default function MyInfoPage() {
     phone: "",
     address: "",
     addressDetail: "",
+    zipcode: "",
   });
 
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -36,6 +39,7 @@ export default function MyInfoPage() {
     phone: "",
     address: "",
     detail: "",
+    zipcode: "",
     isDefault: false,
   });
 
@@ -45,6 +49,7 @@ export default function MyInfoPage() {
     phone: "",
     address: "",
     detail: "",
+    zipcode: "",
   });
 
   // -------------------------------
@@ -69,6 +74,7 @@ export default function MyInfoPage() {
         phone: data.phone,
         address: data.address,
         addressDetail: data.addressDetail,
+        zipcode: data.zipcode,
       });
     } catch (err) {
       console.error(err);
@@ -90,6 +96,31 @@ export default function MyInfoPage() {
     }
   };
 
+  const openPostcodeForNew = () => {
+    new (window as any).daum.Postcode({
+      oncomplete: (data: any) => {
+        setNewAddress((prev) => ({
+          ...prev,
+          zipcode: data.zonecode,
+          address: data.roadAddress || data.jibunAddress,
+        }));
+      },
+    }).open();
+  };
+
+  // 수정용
+  const openPostcodeForEdit = () => {
+    new (window as any).daum.Postcode({
+      oncomplete: (data: any) => {
+        setEditData((prev) => ({
+          ...prev,
+          zipcode: data.zonecode,
+          address: data.roadAddress || data.jibunAddress,
+        }));
+      },
+    }).open();
+  };
+
   // -----------------------------
   // 🚀 기본주소 가상 배송지 생성 로직
   // -----------------------------
@@ -108,6 +139,7 @@ export default function MyInfoPage() {
       phone: member.phone,
       address: member.address,
       detail: member.addressDetail,
+      zipcode: member.zipcode ?? "",
       isDefault: false,
       isVirtual: true,
     };
@@ -124,6 +156,7 @@ export default function MyInfoPage() {
       phone: member.phone,
       address: member.address,
       detail: member.addressDetail,
+      zipcode: member.zipcode ?? "",
       isDefault: false,
     };
 
@@ -182,7 +215,7 @@ export default function MyInfoPage() {
       if (!res.ok) throw new Error();
 
       alert("추가 완료");
-      setNewAddress({ name: "", phone: "", address: "", detail: "", isDefault: false });
+      setNewAddress({ name: "", phone: "", address: "", detail: "", zipcode: "", isDefault: false });
       loadAddresses();
     } catch (err) {
       alert("추가 실패");
@@ -202,6 +235,7 @@ export default function MyInfoPage() {
           phone: newReal.phone,
           address: newReal.address,
           detail: newReal.detail,
+          zipcode: newReal.zipcode ?? "",
         });
       }
       return;
@@ -213,6 +247,7 @@ export default function MyInfoPage() {
       phone: item.phone,
       address: item.address,
       detail: item.detail,
+      zipcode: item.zipcode ?? "",
     });
   };
 
@@ -286,6 +321,19 @@ export default function MyInfoPage() {
     loadAddresses();
   };
 
+  const openPostcodeForMyInfo = () => {
+    new (window as any).daum.Postcode({
+      oncomplete: (data: any) => {
+        setMember((prev) => ({
+          ...prev,
+          zipcode: data.zonecode,
+          address: data.roadAddress || data.jibunAddress,
+        }));
+      },
+    }).open();
+  };
+
+
   // --------------------------
   // UI 렌더링
   // --------------------------
@@ -314,13 +362,24 @@ export default function MyInfoPage() {
               className="w-full border-b py-2"
             />
 
-            <input
-              type="text"
-              value={member.address}
-              onChange={(e) => setMember({ ...member, address: e.target.value })}
-              placeholder="기본 주소"
-              className="w-full border-b py-2"
-            />
+            
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={member.address}
+                onChange={(e) => setMember({ ...member, address: e.target.value })}
+                placeholder="기본 주소"
+                className="flex-1 border-b py-2"
+              />
+
+              <button
+                type="button"
+                onClick={openPostcodeForMyInfo}
+                className="px-3 py-1 border border-gray-300 bg-white rounded-sm text-sm hover:bg-gray-100"
+              >
+                주소 찾기
+              </button>
+            </div>
 
             <input
               type="text"
@@ -360,10 +419,28 @@ export default function MyInfoPage() {
                     onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
                   />
 
+                  <div className="flex gap-2">
+                    <input
+                      className="flex-1 border-b p-2"
+                      placeholder="우편번호"
+                      value={editData.zipcode}
+                      readOnly
+                    />
+
+                    <button
+                      type="button"
+                      onClick={openPostcodeForEdit}
+                      className="px-3 py-1 border border-gray-300 bg-white rounded-sm text-sm hover:bg-gray-100"
+                    >
+                      주소 찾기
+                    </button>
+                  </div>
+
+                  
                   <input
                     className="w-full border-b p-2"
                     value={editData.address}
-                    onChange={(e) => setEditData({ ...editData, address: e.target.value })}
+                    readOnly
                   />
 
                   <input
@@ -424,11 +501,30 @@ export default function MyInfoPage() {
             onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
           />
 
+          {/* 우편번호 + 주소 찾기 버튼 */}
+          <div className="flex gap-2">
+            <input
+              className="flex-1 border-b p-2"
+              placeholder="우편번호"
+              value={newAddress.zipcode}
+              readOnly
+            />
+
+            <button
+              type="button"
+              onClick={openPostcodeForNew}
+              className="px-3 py-1 border border-gray-300 bg-white rounded-sm text-sm hover:bg-gray-100"
+            >
+              주소 찾기
+            </button>
+          </div>
+
+          {/* 주소 input (자동입력) */}
           <input
             className="w-full border-b p-2"
             placeholder="주소"
             value={newAddress.address}
-            onChange={(e) => setNewAddress({ ...newAddress, address: e.target.value })}
+            readOnly
           />
 
           <input
