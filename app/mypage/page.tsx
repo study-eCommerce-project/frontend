@@ -1,8 +1,3 @@
-"use client";
-import { useUser } from "../../context/UserContext";
-import Link from "next/link";
-import { User, CreditCard, ShoppingBag, Heart, LogOut, ChevronRight } from "lucide-react";
-
 /**
  * 📌 [왜 MyPage는 별도로 훅·컴포넌트로 분리할 필요가 없는가?]
  *
@@ -30,9 +25,37 @@ import { User, CreditCard, ShoppingBag, Heart, LogOut, ChevronRight } from "luci
  * - MyPage는 "정적 UI + 간단한 user 표시" 구조로 최적화되어 있어
  *   지금 구조가 가장 깔끔하고 유지보수 친화적이다.
  */
+"use client";
+
+import { useUser } from "../../context/UserContext";
+import { useCart } from "../../context/CartContext";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { User, CreditCard, ShoppingBag, Heart, LogOut, ChevronRight } from "lucide-react";
 
 export default function MyPage() {
-  const { user } = useUser();
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+  const { user, setUser } = useUser();
+  const { loadCart } = useCart();
+  const router = useRouter();
+
+  /** 🔥 로그아웃 */
+  const handleLogout = async () => {
+    try {
+      await fetch(`${API_URL}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch { }
+
+    // 상태 초기화
+    setUser(null);
+    localStorage.removeItem("user");
+    loadCart();
+
+    router.push("/");
+  };
 
   const menuSections = [
     {
@@ -52,7 +75,7 @@ export default function MyPage() {
       title: "계정",
       items: [
         { title: "내 정보 수정", href: "/mypage/edit", icon: <User className="w-5 h-5" /> },
-        { title: "로그아웃", href: "/", icon: <LogOut className="w-5 h-5" /> },
+        { title: "로그아웃", href: "", type: "logout", icon: <LogOut className="w-5 h-5" /> },
       ],
     },
   ];
@@ -87,28 +110,42 @@ export default function MyPage() {
 
         {/* 요약 카드 */}
         <div className="grid grid-cols-3 gap-4">
-          <SummaryCard title="적립금" value="0원" />
+          <SummaryCard title="적립금" value="0원" valueColor={undefined} />
           <SummaryCard title="쿠폰" value="3장" />
           <SummaryCard title="후기" value="1개" valueColor="text-blue-600" />
         </div>
 
-        {/* 메뉴 섹션 */}
+        {/* 메뉴 */}
         {menuSections.map((section, idx) => (
           <div key={idx} className="bg-white rounded-xl shadow-sm divide-y">
             <h2 className="px-6 py-3 font-medium text-gray-500 text-sm">{section.title}</h2>
-            {section.items.map((item, i) => (
-              <Link
-                key={i}
-                href={item.href}
-                className="flex justify-between items-center px-6 py-4 hover:bg-gray-50 transition cursor-pointer"
-              >
-                <div className="flex items-center gap-3 text-gray-700">
-                  {item.icon}
-                  <span className="text-sm">{item.title}</span>
-                </div>
-                <ChevronRight className="text-gray-400 w-4 h-4" />
-              </Link>
-            ))}
+
+            {section.items.map((item, i) =>
+              item.type === "logout" ? (
+                <button
+                  key={i}
+                  onClick={handleLogout}
+                  className="w-full cursor-pointer flex justify-between items-center px-6 py-4 hover:bg-gray-50 transition"
+                >
+                  <div className="flex items-center gap-3 text-gray-700">
+                    {item.icon}
+                    <span className="text-sm">{item.title}</span>
+                  </div>
+                </button>
+              ) : (
+                <Link
+                  key={i}
+                  href={item.href}
+                  className="flex justify-between items-center px-6 py-4 hover:bg-gray-50 transition"
+                >
+                  <div className="flex items-center gap-3 text-gray-700">
+                    {item.icon}
+                    <span className="text-sm">{item.title}</span>
+                  </div>
+                  <ChevronRight className="text-gray-400 w-4 h-4" />
+                </Link>
+              )
+            )}
           </div>
         ))}
       </div>
@@ -116,12 +153,9 @@ export default function MyPage() {
   );
 }
 
-///////////////////////////////////////////
-// 🔹 요약 카드 컴포넌트
-///////////////////////////////////////////
 function SummaryCard({ title, value, valueColor }: { title: string; value: string; valueColor?: string }) {
   return (
-    <div className="bg-white p-4 rounded-xl shadow-sm text-center cursor-pointer hover:bg-gray-50 transition">
+    <div className="bg-white p-4 rounded-xl shadow-sm text-center hover:bg-gray-50 transition">
       <p className="text-gray-500 text-sm mb-1">{title}</p>
       <p className={`text-lg font-bold ${valueColor || "text-gray-800"}`}>{value}</p>
     </div>
