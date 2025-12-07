@@ -138,20 +138,24 @@ export function useProductInfoLogic(
     if (product.isOption && selectedOptions.length === 0)
       return alert("옵션을 선택해주세요!");
 
-    const orderInfo = {
-      productId: product.productId,
-      productName: product.productName,
-      mainImg: product.mainImg,
-      sellPrice: product.sellPrice,
-      options: product.isOption
-        ? selectedOptions
-        : [
-            {
-              value: "기본",
-              count: 1,
-            },
-          ],
-    };
+    const orderInfo = product.isOption
+    ? {
+        // 옵션 상품
+        productId: product.productId,
+        productName: product.productName,
+        mainImg: product.mainImg,
+        sellPrice: product.sellPrice,
+        options: selectedOptions, // 옵션 수량 already inside
+      }
+    : {
+        // 단일 상품
+        productId: product.productId,
+        productName: product.productName,
+        mainImg: product.mainImg,
+        sellPrice: product.sellPrice,
+        quantity: singleCount,  // 옵션 상품 수량
+        options: [], // 단일 상품은 옵션 없음
+      };
 
     // 결제 페이지로 전달할 데이터 임시 저장
     sessionStorage.setItem("checkoutData", JSON.stringify(orderInfo));

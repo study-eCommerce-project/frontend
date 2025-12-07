@@ -300,7 +300,7 @@ export default function CheckoutPage() {
     }
 
     try {
-      const res = await fetch(`${API_URL}//api/address/add`, {
+      const res = await fetch(`${API_URL}/api/address/add`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
