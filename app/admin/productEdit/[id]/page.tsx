@@ -5,9 +5,6 @@ import { useRouter, useParams } from "next/navigation";
 
 import Input from "../../../ui/Input";
 import Button from "../../../ui/Button";
-import ImageUpload from "../../../ui/ImageUpload";
-import Textarea from "../../../ui/Textarea";
-import MultiImageUpload from "../../../ui/MultiImageUpload";
 import { Plus, Trash2 } from "lucide-react";
 
 import type { AdminProduct, AdminProductOption } from "@/types/adminProduct";
@@ -15,15 +12,20 @@ import type { CategoryTree } from "@/types/category";
 
 export default function ProductEditPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  // const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL; 
   const router = useRouter();
+
+  
   const params = useParams();
   const productId = params?.id;
 
   const [product, setProduct] = useState<AdminProduct | null>(null);
+  const [loading, setLoading] = useState(true);
   const [categoryTree, setCategoryTree] = useState<CategoryTree | null>(null);
   const [selectedBig, setSelectedBig] = useState<string>("");
   const [selectedMid, setSelectedMid] = useState<string>("");
-  const [loading, setLoading] = useState(true);
+  const [subImageUrl, setSubImageUrl] = useState<string>("");
+
 
   // ------------------------------
   // 카테고리 트리 fetch
@@ -61,7 +63,11 @@ export default function ProductEditPage() {
           stock: raw.stock ?? 0,
           isOption: !!raw.isOption,
           mainImg: raw.mainImg ?? "",
-          images: raw.images ?? [],
+          subImages: raw.subImages?.map((img: any) => ({
+            imageUrl: img.imageUrl,
+            sortOrder: img.sortOrder,
+            productId: img.productId,
+          })) ?? [],
           productStatus: raw.productStatus ?? 10,
           isShow: raw.isShow ?? true,
           categoryCode: raw.categoryCode ?? "",
@@ -70,7 +76,6 @@ export default function ProductEditPage() {
             optionType: opt.optionType ?? "N",
             optionTitle: opt.optionTitle ?? "",
             optionValue: opt.optionValue ?? "",
-            // extraPrice = 옵션 최종가 - 기본가
             extraPrice: (opt.sellPrice ?? basePrice) - basePrice,
             sellPrice: opt.sellPrice ?? basePrice,
             stock: opt.stock ?? 0,
@@ -97,7 +102,7 @@ export default function ProductEditPage() {
           }
         }
       } catch (err) {
-        console.error(err);
+        console.error("상품을 불러오는 중 오류 발생:", err);
       } finally {
         setLoading(false);
       }
@@ -105,6 +110,14 @@ export default function ProductEditPage() {
 
     fetchProduct();
   }, [API_URL, productId, categoryTree]);
+
+  // ------------------------------
+  // 총 재고 계산 
+  // ------------------------------
+  const totalStock = product?.isOption
+    ? product.options.reduce((total, option) => total + option.stock, 0)  // 옵션 상품일 경우
+    : product?.stock;
+
 
   // ------------------------------
   // 핸들러
@@ -156,6 +169,78 @@ export default function ProductEditPage() {
     );
   };
 
+  const handleAddSubImage = () => {
+    if (subImageUrl) {
+      setProduct((prev) => {
+        if (prev === null) {
+          // prev가 null일 경우 빈 AdminProduct 객체로 초기값 처리
+          return {
+            subImages: [
+              { imageUrl: subImageUrl, sortOrder: 0, productId: 0 }, // 초기값 설정
+            ],
+            productId: 0,
+            productName: '',
+            description: '',
+            consumerPrice: 0,
+            sellPrice: 0,
+            stock: 0,
+            isOption: false,
+            mainImg: '',
+            productStatus: 10,
+            isShow: true,
+            categoryCode: '',
+            options: [],
+            totalStock: 0,
+          };
+        }
+
+        return {
+          ...prev,
+          subImages: [
+            ...(prev.subImages || []),  // prev.subImages가 없으면 빈 배열로 처리
+            {
+              imageUrl: subImageUrl,
+              sortOrder: prev.subImages ? prev.subImages.length + 1 : 1,   // 새로운 이미지의 정렬 순서
+              productId: prev.productId || 0,  // productId 추가 (없으면 0)
+            },
+          ],
+        };
+      });
+      setSubImageUrl("");  // URL 추가 후 입력 필드 비우기
+    }
+  };
+
+
+  const removeSubImage = (index: number) => {
+    setProduct((prev) => {
+      if (prev === null) {
+        // prev가 null일 경우 초기값 설정
+        return {
+          subImages: [],
+          productId: 0,
+          productName: '',
+          description: '',
+          consumerPrice: 0,
+          sellPrice: 0,
+          stock: 0,
+          isOption: false,
+          mainImg: '',
+          productStatus: 10,
+          isShow: true,
+          categoryCode: '',
+          options: [],
+          totalStock: 0,
+        };
+      }
+
+      return {
+        ...prev,  // 기존 값 복사
+        subImages: prev.subImages?.filter((_, i) => i !== index) || [], // subImages가 없으면 빈 배열로 처리
+      };
+    });
+  };
+
+
   // ------------------------------
   // 저장
   // ------------------------------
@@ -179,15 +264,19 @@ export default function ProductEditPage() {
     };
 
     try {
-      const res = await fetch(`${API_URL}/api/products/${productId}`, {
+      const res = await fetch(`${API_URL}/api/admin/products/${productId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
+      // 응답 확인
       if (!res.ok) throw new Error("저장 실패");
 
+      // 저장 성공 후 메시지 출력
       alert("상품 정보가 저장되었습니다.");
+
+      // 상품 목록 페이지로 이동
       router.push("/admin/productList");
     } catch (err) {
       console.error(err);
@@ -221,21 +310,71 @@ export default function ProductEditPage() {
           상품 수정
         </h1>
 
-        <div className="grid md:grid-cols-2 gap-10 mt-6">
           {/* 왼쪽: 이미지 */}
-          <div className="flex flex-col gap-6">
-            <ImageUpload
-              image={product.mainImg}
-              onChange={(value) => handleChange("mainImg", value)}
+          <div className="mb-4">
+            <Input
+              label="대표 이미지 URL"
+              value={product.mainImg}
+              onChange={(e) => setProduct({ ...product, mainImg: e.target.value })}
+              placeholder="대표 이미지 URL을 입력하세요"
             />
 
-            {/* 필요하면 상세 이미지도 수정 가능하게 */}
-            <p className="font-semibold mt-4">상세 이미지</p>
-            <MultiImageUpload
-              images={product.images || []}
-              onChange={(imgs) => handleChange("images", imgs)}
+            {/* 대표 이미지 미리보기 */}
+            {product.mainImg && (
+              <div className="mt-2">
+                <img
+                  // src={`${IMAGE_BASE_URL}${product.mainImg}`}
+                  src={`${product.mainImg}`}
+                  alt="대표 이미지 미리보기"
+                  className="w-120px h-240px object-contain"
+                />
+              </div>
+            )}
+
+            <div className="mb-4">
+            {/* 상세 이미지 URL 입력 */}
+            <Input
+              label="상세 이미지 URL 추가"
+              value={subImageUrl}
+              onChange={(e) => setSubImageUrl(e.target.value)}
+              placeholder="상세 이미지 URL을 입력하세요"
             />
+            <Button
+              className="mt-2"
+              onClick={handleAddSubImage}  // 이미지를 추가하는 함수
+              disabled={!subImageUrl}  // 입력된 URL이 없으면 버튼 비활성화
+            >
+              추가
+            </Button>
           </div>
+
+          {/* 추가된 상세 이미지 목록 */}
+          <div className="mb-4">
+            {product.subImages && product.subImages.length > 0 && (
+              <div>
+                <p className="font-semibold">상세 이미지 목록</p>
+                <div className="space-y-2">
+                  {product.subImages.map((img, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <img
+                        // src={`${IMAGE_BASE_URL}${img.imageUrl}`} 
+                        src={`${img.imageUrl}`}  // 미리보기
+                        alt={`sub-image-${idx}`}
+                        className="w-20 h-20 object-cover"
+                      />
+                      <Button
+                        className="text-red-500"
+                        onClick={() => removeSubImage(idx)}  // 이미지 삭제 함수
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
 
           {/* 우측: 상품 정보 */}
           <div className="flex flex-col gap-6 md:w-1/2">
@@ -325,13 +464,19 @@ export default function ProductEditPage() {
               </div>
             )}
 
-            <Textarea
-              label="상품 설명"
-              value={product.description || ""}
-              onChange={(e) => handleChange("description", e.target.value)}
-              rows={6}
-            />
+            {/* 상품 설명 */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                상품 설명
+              </label>
+              <textarea
+                className="w-full border rounded-md px-3 py-2 text-sm min-h-[120px]"
+                value={product.description || ""}
+                onChange={(e) => handleChange("description", e.target.value)}
+              />
+            </div>
 
+            {/* 가격 / 재고 */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Input
                 label="소비자가"
@@ -361,26 +506,10 @@ export default function ProductEditPage() {
               )}
             </div>
 
-            {/* 상품 노출 여부 / 상태 */}
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* 상품 상태 / 노출 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700">
-                  상품 노출 여부
-                </label>
-                <select
-                  value={product.isShow ? "yes" : "no"}
-                  onChange={(e) =>
-                    handleChange("isShow", e.target.value === "yes")
-                  }
-                  className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value="yes">노출</option>
-                  <option value="no">숨김</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
                   상품 상태
                 </label>
                 <select
@@ -388,13 +517,29 @@ export default function ProductEditPage() {
                   onChange={(e) =>
                     handleChange("productStatus", Number(e.target.value))
                   }
-                  className="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md"
+                  className="w-full border rounded-md px-3 py-2 text-sm"
                 >
                   <option value={10}>정상</option>
                   <option value={20}>품절</option>
                   <option value={21}>재고확보중</option>
                   <option value={40}>판매중지</option>
                   <option value={90}>판매종료</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  상품 노출 여부
+                </label>
+                <select
+                  value={product.isShow ? "yes" : "no"}
+                  onChange={(e) =>
+                    handleChange("isShow", e.target.value === "yes")
+                  }
+                  className="w-full border rounded-md px-3 py-2 text-sm"
+                >
+                  <option value="yes">노출</option>
+                  <option value="no">숨김</option>
                 </select>
               </div>
             </div>
@@ -407,6 +552,19 @@ export default function ProductEditPage() {
                 onChange={(e) => handleChange("isOption", e.target.checked)}
               />
               <span className="ml-2 text-sm">옵션 상품 여부</span>
+            </div>
+
+            {/* 총 재고 표시 (옵션 상품일 경우 합산된 재고 값 표시) */}
+            <div className="mb-4">
+              {product.isOption ? (
+                <div>
+                  <h3 className="font-semibold">총 재고: {totalStock}</h3>
+                </div>
+              ) : (
+                <div>
+                  <h3 className="font-semibold">총 재고: {product.stock}</h3>
+                </div>
+              )}
             </div>
 
             {/* 옵션 목록 */}

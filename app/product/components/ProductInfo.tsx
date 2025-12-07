@@ -21,7 +21,13 @@ import { Heart, Plus, Minus, X, Ban } from "lucide-react";
  * ※ 모든 비즈니스 로직은 useProductInfoLogic 훅으로 분리됨
  */
 
-export default function ProductInfo({ product }: { product: Product }) {
+interface ProductInfoProps {
+  product: Product;
+  isAdmin?: boolean;
+}
+
+export default function ProductInfo({ product, isAdmin }: ProductInfoProps) {
+
   const router = useRouter();
   const { user } = useUser();
   const { addToCart } = useCart();
@@ -324,28 +330,32 @@ export default function ProductInfo({ product }: { product: Product }) {
             {likeCount.toLocaleString()}
           </span>
         </button>
+        
+        {!isAdmin && (
+          <div className="flex gap-4 mt-6">
+            <button
+              onClick={() =>
+                product.isOption
+                  ? handleAddToCart(1)
+                  : handleAddToCart(singleCount)
+              }
+              className="flex-1 bg-black text-white py-3 rounded-xl hover:bg-gray-900 cursor-pointer"
+            >
+              장바구니
+            </button>
 
-        <button
-          onClick={() =>
-            product.isOption
-              ? handleAddToCart(1)
-              : handleAddToCart(singleCount)
-          }
-          className="flex-1 bg-black text-white py-3 rounded-xl hover:bg-gray-900 cursor-pointer"
-        >
-          장바구니
-        </button>
-
-        <button
-          onClick={() =>
-            product.isOption
-              ? handleBuyNow(1)
-              : handleBuyNow(singleCount)
-          }
-          className="flex-1 bg-white text-black py-3 rounded-xl hover:bg-gray-100 border border-gray-300 cursor-pointer"
-        >
-          구매하기
-        </button>
+            <button
+              onClick={() =>
+                product.isOption
+                  ? handleBuyNow(1)
+                  : handleBuyNow(singleCount)
+              }
+              className="flex-1 bg-white text-black py-3 rounded-xl hover:bg-gray-100 border border-gray-300 cursor-pointer"
+            >
+              구매하기
+            </button>
+          </div>
+        )}  
       </div>
     </div>
   );

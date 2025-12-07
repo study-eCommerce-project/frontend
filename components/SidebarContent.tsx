@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, Heart, ShoppingCart, LogIn, UserPlus, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/context/CartContext"; // ⭐ 장바구니 상태 가져오기
+import { useCart } from "@/context/CartContext"; 
+import type { CategoryTree } from "@/types/category";
+
 
 interface SidebarContentProps {
   user: any;
@@ -15,10 +17,11 @@ export default function SidebarContent({ user, onClose }: SidebarContentProps) {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const [search, setSearch] = useState("");
-  const [tree, setTree] = useState<any>(null); // 카테고리 전체 트리
+  const [tree, setTree] = useState<CategoryTree | null>(null);// 카테고리 전체 트리
   const [originalTree, setOriginalTree] = useState<any>(null); // (사용할 수도 있는 원본 tree)
   const [open, setOpen] = useState<{ [key: string]: boolean }>({}); // 아코디언 열림/닫힘 상태
   const router = useRouter();
+
 
   const { cart } = useCart(); // ⭐ 장바구니 수량 가져오기
 
@@ -36,11 +39,101 @@ export default function SidebarContent({ user, onClose }: SidebarContentProps) {
   }, []);
 
   /** ----------------------------------------------------
+   *  아카디언 자동 열림
+   * --------------------------------------------------- */
+  useEffect(() => {
+    if (!tree) return;
+
+    // 검색어 없으면 기존 열림 상태 유지
+    if (!search.trim()) return;
+
+    const lower = search.toLowerCase();
+    const newOpen: { [key: string]: boolean } = {};
+
+    for (const [bigCode, bigNode] of Object.entries(tree)) {
+      const bigMatch = bigNode.title.toLowerCase().includes(lower);
+
+      let hasMidOrLeafMatch = false;
+
+      for (const [_, midNode] of Object.entries(bigNode.children)) {
+        const midMatch = midNode.title.toLowerCase().includes(lower);
+
+        const leafMatch = Object.values(midNode.children).some((leafTitle) =>
+          (leafTitle as string).toLowerCase().includes(lower)
+        );
+
+        if (midMatch || leafMatch) {
+          hasMidOrLeafMatch = true;
+          break;
+        }
+      }
+
+      // 대분류 제목 OR 하위 분류 매칭되면 자동 열기
+      if (bigMatch || hasMidOrLeafMatch) {
+        newOpen[bigCode] = true;
+      }
+    }
+
+    setOpen(newOpen);
+  }, [search, tree]);
+
+
+  /** ----------------------------------------------------
    *  아코디언 토글 (대분류 열고 닫기)
    * --------------------------------------------------- */
   const toggleOpen = (code: string) => {
     setOpen((prev) => ({ ...prev, [code]: !prev[code] }));
   };
+
+
+   /** ----------------------------------------------------
+   *  검색 필터링
+   * --------------------------------------------------- */
+  const getFilteredTree = () => {
+    if (!tree) return null;
+    if (!search.trim()) return tree;
+
+    const lower = search.toLowerCase();
+    const filtered: CategoryTree = {};
+
+    for (const [bigCode, bigNode] of Object.entries(tree)) {
+      const bigMatch = bigNode.title.toLowerCase().includes(lower);
+
+      const midMatches: CategoryTree[string]["children"] = {};
+
+      for (const [midCode, midNode] of Object.entries(bigNode.children)) {
+        const midMatch = midNode.title.toLowerCase().includes(lower);
+
+        const leafMatches: { [leafCode: string]: string } = {};
+
+        for (const [leafCode, leafTitle] of Object.entries(midNode.children)) {
+          if ((leafTitle as string).toLowerCase().includes(lower)) {
+            leafMatches[leafCode] = leafTitle as string;
+          }
+        }
+
+        if (midMatch || Object.keys(leafMatches).length > 0) {
+          midMatches[midCode] = {
+            ...midNode,
+            children: leafMatches
+          };
+        }
+      }
+
+      if (bigMatch || Object.keys(midMatches).length > 0) {
+        filtered[bigCode] = {
+          ...bigNode,
+          children: midMatches
+        };
+      }
+    }
+
+    return filtered;
+  };
+
+
+
+  const filteredTree = getFilteredTree();
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -114,8 +207,11 @@ export default function SidebarContent({ user, onClose }: SidebarContentProps) {
         }
       ----------------------------------------------------- */}
       <div className="flex-1 overflow-y-auto py-3 px-4">
-        {tree &&
-          Object.entries(tree).map(([bigCode, bigNode]: any) => (
+
+        {filteredTree &&
+          Object.entries(filteredTree).map(
+            ([bigCode, bigNode]: [string, CategoryTree[string]]) => (
+
             <div key={bigCode} className="mb-3">
 
               {/* 대분류 */}
