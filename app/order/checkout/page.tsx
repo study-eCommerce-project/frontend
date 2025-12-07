@@ -6,8 +6,9 @@ import { useCart } from "@/context/CartContext";
 import { toFullUrlCDN } from "@/lib/utils/toFullUrlCDN";
 
 interface CheckoutOption {
-  optionId: number;
-  value: string;
+  value?: string;
+  optionTitle?: string;
+  optionValue?: string;
   count: number;
 }
 
@@ -16,10 +17,8 @@ interface CheckoutData {
   productName: string;
   mainImg: string;
   sellPrice: number;
-  options: {
-    value: string;
-    count: number;
-  }[];
+  quantity?: number;
+  options: CheckoutOption[];
 }
 
 interface Address {
@@ -69,18 +68,25 @@ export default function CheckoutPage() {
       return;
     }
 
+    // 카드 결제용 OrderRequestDTO
+  const orderData = {
+    items: itemsToShow.map((item) => ({
+      productId: item.productId,
+      quantity: item.options.reduce((sum, opt) => sum + opt.count, 0),
+      optionValues: item.options.map((o) => o.value),
+    })),
+    addressId: selectedAddress,
+  };
+
     try {
       setLoading(true);
 
       // 1) 백엔드 — 카드 주문 READY 생성
-      const res = await fetch(`http://localhost:8080/api/orders/checkout/card?addressId=${selectedAddress}`, {
+      const res = await fetch(`http://localhost:8080/api/orders/checkout/card`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          memberId: 1,            // TODO: UserContext에서 로그인 유저 ID 가져오면 됨
-          addressId: selectedAddress,
-        }),
+        body: JSON.stringify(orderData),   // ← items[], addressId
       });
 
       if (!res.ok) {
@@ -112,9 +118,11 @@ export default function CheckoutPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          paymentId: payment.paymentId,
-          orderId: order.orderId,
-        }),
+        paymentId: payment.paymentId,
+        orderId: order.orderId,
+        items: orderData.items,       // 결제 완료 후 완전한 물건 목록 전달
+        addressId: selectedAddress,   // 배송지 전달
+      }),
       });
 
       const verifyMsg = await verify.text();
@@ -190,12 +198,58 @@ export default function CheckoutPage() {
   let itemsToShow: (CheckoutData & { quantity?: number })[] = [];
 
   if (directData) {
-    // 바로 구매
-    // - 상품 상세페이지에서 '구매하기'를 눌러 들어온 경우
-    // - sessionStorage 에 저장된 단일 상품 정보만 표시
-    // - 장바구니 상품은 완전히 무시
-    itemsToShow = [directData];
     
+  // 바로구매 모드
+  const hasOptions =
+    directData.options &&
+    Array.isArray(directData.options) &&
+    directData.options.length > 0;
+
+  if (!hasOptions) {
+    // 옵션 없는 상품 → 기본 1개
+    itemsToShow = [
+      {
+        productId: directData.productId,
+        productName: directData.productName,
+        mainImg: directData.mainImg,
+        sellPrice: directData.sellPrice,
+        options: [
+          {
+            value: "기본",
+            count: directData.quantity ?? 1,
+          },
+        ],
+      },
+    ];
+  } else {
+    // 옵션 있는 상품
+    itemsToShow = [
+      {
+        productId: directData.productId,
+        productName: directData.productName,
+        mainImg: directData.mainImg,
+        sellPrice: directData.sellPrice,
+
+        options: directData.options.map((opt) => {
+          let optionText = "기본";
+
+          // 상품 상세 페이지에서 넘겨준 단일 문자열 옵션
+          if (opt.value && opt.value.trim() !== "") {
+            optionText = opt.value;
+          }
+
+          // 옵션은 opt.count 만 있으면 됨
+          const qty = opt.count ?? directData.quantity ?? 1;
+
+          return {
+            value: optionText,
+            count: qty,
+          };
+        }),
+      },
+    ];
+  }
+
   } else {
     // 장바구니 결제 모드
     // - directData가 없으면 장바구니에서 결제 버튼을 눌러 들어온 경우
@@ -210,13 +264,13 @@ export default function CheckoutPage() {
           options: c.optionValue
                 ? [
                     {
-                      value: `${c.optionTitle ?? ""} ${c.optionValue}`,
+                      value: `${c.optionTitle ?? ""} ${c.optionValue ?? ""}`, // e.g. ["색상 Ivory"]
                       count: c.quantity,
                     }
                   ]
-                : [
+                : [  // 옵션 없는 상품
                     {
-                      value: "기본",
+                      value: "기본",  // ["기본"]
                       count: c.quantity,
                     }
                   ],
@@ -281,9 +335,12 @@ export default function CheckoutPage() {
     }
 
     const orderData = {
-      items: itemsToShow,
-      addressId: selectedAddress,
-      totalPrice,
+      items: itemsToShow.map((item) => ({
+        productId: item.productId,
+        quantity: item.options.reduce((sum, opt) => sum + opt.count, 0),
+        optionValues: item.options.map((o) => o.value)
+      })),
+      addressId: selectedAddress
     };
 
     setLoading(true);
