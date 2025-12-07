@@ -22,6 +22,7 @@ interface Address {
 }
 
 export default function MyInfoPage() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [member, setMember] = useState<MemberInfo>({
     name: "",
     phone: "",
@@ -62,7 +63,7 @@ export default function MyInfoPage() {
 
   const loadMyInfo = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/member/me", {
+      const res = await fetch(`${API_URL}/api/member/me`, {
         credentials: "include",
       });
 
@@ -83,7 +84,7 @@ export default function MyInfoPage() {
 
   const loadAddresses = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/address", {
+      const res = await fetch(`${API_URL}/api/address`, {
         credentials: "include",
       });
 
@@ -160,7 +161,7 @@ export default function MyInfoPage() {
       isDefault: false,
     };
 
-    const res = await fetch("http://localhost:8080/api/address/add", {
+    const res = await fetch(`${API_URL}/api/address/add`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -170,7 +171,7 @@ export default function MyInfoPage() {
     if (!res.ok) return null;
 
     await loadAddresses();
-    const refreshed = await fetch("http://localhost:8080/api/address", {
+    const refreshed = await fetch(`${API_URL}/api/address`, {
       credentials: "include",
     });
     return (await refreshed.json())[0]; // 가장 최근 항목
@@ -183,7 +184,7 @@ export default function MyInfoPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8080/api/update", {
+      const res = await fetch(`${API_URL}/api/update`, {
         method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -205,7 +206,7 @@ export default function MyInfoPage() {
   // --------------------------
   const addAddress = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/address/add", {
+      const res = await fetch(`${API_URL}/api/address/add`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -256,7 +257,7 @@ export default function MyInfoPage() {
   // --------------------------
   const saveEdit = async () => {
     try {
-      const res = await fetch(`http://localhost:8080/api/address/${editId}`, {
+      const res = await fetch(`${API_URL}/api/address/${editId}`, {
         method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -283,7 +284,7 @@ export default function MyInfoPage() {
     }
 
     try {
-      const res = await fetch(`http://localhost:8080/api/address/${item.id}`, {
+      const res = await fetch(`${API_URL}/api/address/${item.id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -304,7 +305,7 @@ export default function MyInfoPage() {
     if (item.isVirtual) {
       const newReal = await convertVirtualToReal();
       if (newReal) {
-        await fetch(`http://localhost:8080/api/address/${newReal.id}/default`, {
+        await fetch(`${API_URL}/api/address/${newReal.id}/default`, {
           method: "PATCH",
           credentials: "include",
         });
@@ -313,7 +314,7 @@ export default function MyInfoPage() {
       return;
     }
 
-    await fetch(`http://localhost:8080/api/address/${item.id}/default`, {
+    await fetch(`${API_URL}/api/address/${item.id}/default`, {
       method: "PATCH",
       credentials: "include",
     });

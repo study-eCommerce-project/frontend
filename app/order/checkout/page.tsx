@@ -31,6 +31,7 @@ interface Address {
 }
 
 export default function CheckoutPage() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const router = useRouter();
   const { cart, clearCart } = useCart();
 
@@ -82,7 +83,7 @@ export default function CheckoutPage() {
       setLoading(true);
 
       // 1) 백엔드 — 카드 주문 READY 생성
-      const res = await fetch(`http://localhost:8080/api/orders/checkout/card`, {
+      const res = await fetch(`${API_URL}/api/orders/checkout/card`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -114,7 +115,7 @@ export default function CheckoutPage() {
       }
 
       // 3) 백엔드에 결제 검증 요청
-      const verify = await fetch("http://localhost:8080/api/payment/verify", {
+      const verify = await fetch(`${API_URL}/api/payment/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -154,7 +155,7 @@ export default function CheckoutPage() {
 
   const loadAddresses = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/address", {
+      const res = await fetch(`${API_URL}/api/address`, {
         credentials: "include",
       });
 
@@ -299,7 +300,7 @@ export default function CheckoutPage() {
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/address/add", {
+      const res = await fetch(`${API_URL}//api/address/add`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -346,7 +347,7 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8080/api/orders/create", {
+      const res = await fetch(`${API_URL}/api/orders/create`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
