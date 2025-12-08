@@ -21,7 +21,13 @@ import { Heart, Plus, Minus, X, Ban } from "lucide-react";
  * ※ 모든 비즈니스 로직은 useProductInfoLogic 훅으로 분리됨
  */
 
-export default function ProductInfo({ product }: { product: Product }) {
+interface ProductInfoProps {
+  product: Product;
+  isAdmin?: boolean;
+}
+
+export default function ProductInfo({ product, isAdmin }: ProductInfoProps) {
+
   const router = useRouter();
   const { user } = useUser();
   const { addToCart } = useCart();
@@ -310,10 +316,14 @@ export default function ProductInfo({ product }: { product: Product }) {
       </div>
 
       {/* ---------------------- 좋아요 + 버튼 영역 ---------------------- */}
-      <div className="flex flex-col md:flex-row items-center gap-4 w-full">
+      {/* 좋아요 버튼 */}
+      <div className="flex items-center gap-4 w-full">
         <button
           onClick={handleLike}
-          className={`flex items-center gap-2 p-2 border rounded-lg transition-all w-full md:w-auto cursor-pointer
+          className={`p-2 border rounded-lg flex items-center gap-2 
+               bg-white border-gray-300 
+               md:w-auto w-full
+               cursor-pointer
             ${liked ? "bg-rose-50 border-rose-300" : "bg-white border-gray-300"}
           `}
         >
@@ -324,28 +334,33 @@ export default function ProductInfo({ product }: { product: Product }) {
             {likeCount.toLocaleString()}
           </span>
         </button>
+        
+        {/* 장바구니 + 구매하기 */}
+        {!isAdmin && (
+          <div className="flex flex-1 gap-4">
+            <button
+              onClick={() =>
+                product.isOption
+                  ? handleAddToCart(1)
+                  : handleAddToCart(singleCount)
+              }
+             className="flex-1 bg-black text-white py-3 rounded-xl cursor-pointer"
+            >
+              장바구니
+            </button>
 
-        <button
-          onClick={() =>
-            product.isOption
-              ? handleAddToCart(1)
-              : handleAddToCart(singleCount)
-          }
-          className="flex-1 bg-black text-white py-3 rounded-xl hover:bg-gray-900 cursor-pointer"
-        >
-          장바구니
-        </button>
-
-        <button
-          onClick={() =>
-            product.isOption
-              ? handleBuyNow(1)
-              : handleBuyNow(singleCount)
-          }
-          className="flex-1 bg-white text-black py-3 rounded-xl hover:bg-gray-100 border border-gray-300 cursor-pointer"
-        >
-          구매하기
-        </button>
+            <button
+              onClick={() =>
+                product.isOption
+                  ? handleBuyNow(1)
+                  : handleBuyNow(singleCount)
+              }
+              className="flex-1 bg-white text-black py-3 rounded-xl border cursor-pointer"
+            >
+              구매하기
+            </button>
+          </div>
+        )}  
       </div>
     </div>
   );

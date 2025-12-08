@@ -6,8 +6,9 @@ import { useCart } from "@/context/CartContext";
 import { toFullUrlCDN } from "@/lib/utils/toFullUrlCDN";
 
 interface CheckoutOption {
-  optionId: number;
-  value: string;
+  value?: string;
+  optionTitle?: string;
+  optionValue?: string;
   count: number;
 }
 
@@ -16,10 +17,8 @@ interface CheckoutData {
   productName: string;
   mainImg: string;
   sellPrice: number;
-  options: {
-    value: string;
-    count: number;
-  }[];
+  quantity?: number;
+  options: CheckoutOption[];
 }
 
 interface Address {
@@ -28,10 +27,12 @@ interface Address {
   phone: string;
   address: string;
   detail: string;
+  zipcode: string;
   isDefault: boolean;
 }
 
 export default function CheckoutPage() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const router = useRouter();
   const { cart, clearCart } = useCart();
 
@@ -46,6 +47,7 @@ export default function CheckoutPage() {
     phone: "",
     address: "",
     detail: "",
+    zipcode: "",
     isDefault: false,
   });
 
@@ -69,18 +71,25 @@ export default function CheckoutPage() {
       return;
     }
 
+    // 카드 결제용 OrderRequestDTO
+  const orderData = {
+    items: itemsToShow.map((item) => ({
+      productId: item.productId,
+      quantity: item.options.reduce((sum, opt) => sum + opt.count, 0),
+      optionValues: item.options.map((o) => o.value),
+    })),
+    addressId: selectedAddress,
+  };
+
     try {
       setLoading(true);
 
       // 1) 백엔드 — 카드 주문 READY 생성
-      const res = await fetch(`http://localhost:8080/api/orders/checkout/card?addressId=${selectedAddress}`, {
+      const res = await fetch(`${API_URL}/api/orders/checkout/card`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          memberId: 1,            // TODO: UserContext에서 로그인 유저 ID 가져오면 됨
-          addressId: selectedAddress,
-        }),
+        body: JSON.stringify(orderData),   // ← items[], addressId
       });
 
       if (!res.ok) {
@@ -108,13 +117,15 @@ export default function CheckoutPage() {
       }
 
       // 3) 백엔드에 결제 검증 요청
-      const verify = await fetch("http://localhost:8080/api/payment/verify", {
+      const verify = await fetch(`${API_URL}/api/payment/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          paymentId: payment.paymentId,
-          orderId: order.orderId,
-        }),
+        paymentId: payment.paymentId,
+        orderId: order.orderId,
+        items: orderData.items,       // 결제 완료 후 완전한 물건 목록 전달
+        addressId: selectedAddress,   // 배송지 전달
+      }),
       });
 
       const verifyMsg = await verify.text();
@@ -146,7 +157,7 @@ export default function CheckoutPage() {
 
   const loadAddresses = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/address", {
+      const res = await fetch(`${API_URL}/api/address`, {
         credentials: "include",
       });
 
@@ -190,12 +201,58 @@ export default function CheckoutPage() {
   let itemsToShow: (CheckoutData & { quantity?: number })[] = [];
 
   if (directData) {
-    // 바로 구매
-    // - 상품 상세페이지에서 '구매하기'를 눌러 들어온 경우
-    // - sessionStorage 에 저장된 단일 상품 정보만 표시
-    // - 장바구니 상품은 완전히 무시
-    itemsToShow = [directData];
     
+  // 바로구매 모드
+  const hasOptions =
+    directData.options &&
+    Array.isArray(directData.options) &&
+    directData.options.length > 0;
+
+  if (!hasOptions) {
+    // 옵션 없는 상품 → 기본 1개
+    itemsToShow = [
+      {
+        productId: directData.productId,
+        productName: directData.productName,
+        mainImg: directData.mainImg,
+        sellPrice: directData.sellPrice,
+        options: [
+          {
+            value: "기본",
+            count: directData.quantity ?? 1,
+          },
+        ],
+      },
+    ];
+  } else {
+    // 옵션 있는 상품
+    itemsToShow = [
+      {
+        productId: directData.productId,
+        productName: directData.productName,
+        mainImg: directData.mainImg,
+        sellPrice: directData.sellPrice,
+
+        options: directData.options.map((opt) => {
+          let optionText = "기본";
+
+          // 상품 상세 페이지에서 넘겨준 단일 문자열 옵션
+          if (opt.value && opt.value.trim() !== "") {
+            optionText = opt.value;
+          }
+
+          // 옵션은 opt.count 만 있으면 됨
+          const qty = opt.count ?? directData.quantity ?? 1;
+
+          return {
+            value: optionText,
+            count: qty,
+          };
+        }),
+      },
+    ];
+  }
+
   } else {
     // 장바구니 결제 모드
     // - directData가 없으면 장바구니에서 결제 버튼을 눌러 들어온 경우
@@ -210,13 +267,13 @@ export default function CheckoutPage() {
           options: c.optionValue
                 ? [
                     {
-                      value: `${c.optionTitle ?? ""} ${c.optionValue}`,
+                      value: `${c.optionTitle ?? ""} ${c.optionValue ?? ""}`, // e.g. ["색상 Ivory"]
                       count: c.quantity,
                     }
                   ]
-                : [
+                : [  // 옵션 없는 상품
                     {
-                      value: "기본",
+                      value: "기본",  // ["기본"]
                       count: c.quantity,
                     }
                   ],
@@ -245,7 +302,7 @@ export default function CheckoutPage() {
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/address/add", {
+      const res = await fetch(`${API_URL}/api/address/add`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -264,6 +321,7 @@ export default function CheckoutPage() {
         phone: "",
         address: "",
         detail: "",
+        zipcode: "",
         isDefault: false,
       });
     } catch (err) {
@@ -281,15 +339,18 @@ export default function CheckoutPage() {
     }
 
     const orderData = {
-      items: itemsToShow,
-      addressId: selectedAddress,
-      totalPrice,
+      items: itemsToShow.map((item) => ({
+        productId: item.productId,
+        quantity: item.options.reduce((sum, opt) => sum + opt.count, 0),
+        optionValues: item.options.map((o) => o.value)
+      })),
+      addressId: selectedAddress
     };
 
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8080/api/orders/create", {
+      const res = await fetch(`${API_URL}/api/orders/create`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -378,6 +439,7 @@ export default function CheckoutPage() {
                 }
                 className="w-full border rounded-lg px-3 py-2"
               />
+
               <input
                 type="text"
                 placeholder="전화번호"
@@ -385,21 +447,52 @@ export default function CheckoutPage() {
                 onChange={(e) =>
                   setNewAddress({
                     ...newAddress,
-                    phone: formatPhoneNumber(e.target.value)
+                    phone: formatPhoneNumber(e.target.value),
                   })
                 }
                 maxLength={13}
                 className="w-full border rounded-lg px-3 py-2"
               />
+
+              {/* 🔥 우편번호 + 주소찾기 버튼 */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="우편번호"
+                  value={newAddress.zipcode}
+                  readOnly
+                  className="w-full border rounded-lg px-3 py-2"
+                />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    new (window as any).daum.Postcode({
+                      oncomplete(data: any) {
+                        setNewAddress((prev) => ({
+                          ...prev,
+                          zipcode: data.zonecode,
+                          address: data.roadAddress || data.jibunAddress,
+                        }));
+                      },
+                    }).open()
+                  }
+                  className="px-3 py-2 border rounded-lg bg-white hover:bg-gray-100 text-sm"
+                >
+                  주소 찾기
+                </button>
+              </div>
+
+              {/* 주소 (자동 입력) */}
               <input
                 type="text"
                 placeholder="주소"
                 value={newAddress.address}
-                onChange={(e) =>
-                  setNewAddress({ ...newAddress, address: e.target.value })
-                }
+                readOnly
                 className="w-full border rounded-lg px-3 py-2"
               />
+
+              {/* 상세주소 */}
               <input
                 type="text"
                 placeholder="상세 주소"
@@ -432,8 +525,8 @@ export default function CheckoutPage() {
               </button>
             </div>
           )}
-        </div>
-
+        </div> 
+        
         {/* ----------------------------- */}
         {/* 주문 상품 */}
         {/* ----------------------------- */}

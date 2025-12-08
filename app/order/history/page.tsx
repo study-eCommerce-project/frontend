@@ -28,11 +28,12 @@ interface OrderData {
 }
 
 export default function OrderHistoryPage() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [orders, setOrders] = useState<OrderData[]>([]);
 
   useEffect(() => {
     async function loadOrders() {
-      const res = await fetch("http://localhost:8080/api/orders/history", {
+      const res = await fetch(`${API_URL}/api/orders/history`, {
         method: "GET",
         credentials: "include",
       });

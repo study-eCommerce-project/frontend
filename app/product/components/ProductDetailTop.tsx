@@ -3,6 +3,7 @@
 import ProductImages from "./ProductImages";
 import ProductInfo from "./ProductInfo";
 import { Product } from "@/types/product";
+import { useUser } from "@/context/UserContext";
 
 /**
  * 상품 상세 상단 컴포넌트
@@ -17,6 +18,10 @@ interface ProductDetailTopProps {
 }
 
 export default function ProductDetailTop({ product }: ProductDetailTopProps) {
+  const { user } = useUser();   
+
+  // 관리자 여부 판단 (role은 백엔드에서 내려오는 값에 따라 변경)
+  const isAdmin = user?.role === "ADMIN";
 
   // mainImg 없는 상품 방어 코드 (빈 데이터 대비)
   if (!product.mainImg) return null;
@@ -31,8 +36,8 @@ export default function ProductDetailTop({ product }: ProductDetailTopProps) {
           subImages={product.subImages} 
         />
 
-        {/* 우측 상품 정보 */}
-        <ProductInfo product={product} />
+        {/* 우측 상품 정보. 관리자 여부 전달 */}
+        <ProductInfo product={product} isAdmin={isAdmin} />
 
       </div>
     </div>

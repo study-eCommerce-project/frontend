@@ -23,6 +23,7 @@ interface MainCategory {
 
 export default function Page() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const BASE = process.env.NEXT_PUBLIC_IMAGE_BASE_URL;
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +69,7 @@ export default function Page() {
 
   // Products
   useEffect(() => {
-    fetch(`${API_URL}/api/products`)
+    fetch(`${API_URL}/api/products/list`)
       .then((res) => res.json())
       .then((data: Product[]) => {
         setProducts(data);
@@ -190,7 +191,7 @@ export default function Page() {
               >
                 <div className="w-full rounded-xl overflow-hidden flex items-center justify-center bg-white">
                   <img
-                    src={p.mainImg || "/images/default_main.png"}
+                    src={`${BASE}${p.mainImg}`|| "/images/default_main.png"}
                     alt={p.productName}
                     className="w-full h-full object-contain"
                   />
