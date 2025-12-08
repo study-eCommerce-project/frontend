@@ -70,7 +70,10 @@ export default function OrderHistoryPage() {
 
             {/* 배송지 */}
             <Card title="배송지">
-              <p>{order.address.name}</p>
+              <p className="font-semibold flex items-center gap-2">
+                <span>{order.address.name}</span>
+                <span className="text-sm text-gray-500">{order.address.zipcode}</span>
+              </p>
               <p>{order.address.phone}</p>
               <p>
                 {order.address.address} {order.address.detail || ""}

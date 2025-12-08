@@ -72,14 +72,14 @@ export default function CheckoutPage() {
     }
 
     // 카드 결제용 OrderRequestDTO
-  const orderData = {
-    items: itemsToShow.map((item) => ({
-      productId: item.productId,
-      quantity: item.options.reduce((sum, opt) => sum + opt.count, 0),
-      optionValues: item.options.map((o) => o.value),
-    })),
-    addressId: selectedAddress,
-  };
+    const orderData = {
+      items: itemsToShow.map((item) => ({
+        productId: item.productId,
+        quantity: item.options.reduce((sum, opt) => sum + opt.count, 0),
+        optionValues: item.options.map((o) => o.value),
+      })),
+      addressId: selectedAddress,
+    };
 
     try {
       setLoading(true);
@@ -121,11 +121,11 @@ export default function CheckoutPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-        paymentId: payment.paymentId,
-        orderId: order.orderId,
-        items: orderData.items,       // 결제 완료 후 완전한 물건 목록 전달
-        addressId: selectedAddress,   // 배송지 전달
-      }),
+          paymentId: payment.paymentId,
+          orderId: order.orderId,
+          items: orderData.items,       // 결제 완료 후 완전한 물건 목록 전달
+          addressId: selectedAddress,   // 배송지 전달
+        }),
       });
 
       const verifyMsg = await verify.text();
@@ -184,74 +184,74 @@ export default function CheckoutPage() {
     }
   }, []);
 
-// -----------------------------
-// 📌 장바구니 결제 vs 바로구매 분기
-// -----------------------------
-// directData = "바로구매(handleBuyNow)"로 넘어온 단건 결제 데이터
-// cart = 장바구니 데이터
-//
-// 규칙:
-// - directData가 있으면 → 바로구매 모드 → 장바구니를 완전히 무시한다
-// - directData가 없으면 → 장바구니 결제 모드
-//
-// 이유:
-//   바로구매는 단일 상품만 결제해야 하므로,
-//   장바구니 상품이 섞여 들어가면 안 된다.
-//   즉, 바로구매 모드일 때는 cart를 절대 합치면 안 됨.
+  // -----------------------------
+  // 📌 장바구니 결제 vs 바로구매 분기
+  // -----------------------------
+  // directData = "바로구매(handleBuyNow)"로 넘어온 단건 결제 데이터
+  // cart = 장바구니 데이터
+  //
+  // 규칙:
+  // - directData가 있으면 → 바로구매 모드 → 장바구니를 완전히 무시한다
+  // - directData가 없으면 → 장바구니 결제 모드
+  //
+  // 이유:
+  //   바로구매는 단일 상품만 결제해야 하므로,
+  //   장바구니 상품이 섞여 들어가면 안 된다.
+  //   즉, 바로구매 모드일 때는 cart를 절대 합치면 안 됨.
   let itemsToShow: (CheckoutData & { quantity?: number })[] = [];
 
   if (directData) {
-    
-  // 바로구매 모드
-  const hasOptions =
-    directData.options &&
-    Array.isArray(directData.options) &&
-    directData.options.length > 0;
 
-  if (!hasOptions) {
-    // 옵션 없는 상품 → 기본 1개
-    itemsToShow = [
-      {
-        productId: directData.productId,
-        productName: directData.productName,
-        mainImg: directData.mainImg,
-        sellPrice: directData.sellPrice,
-        options: [
-          {
-            value: "기본",
-            count: directData.quantity ?? 1,
-          },
-        ],
-      },
-    ];
-  } else {
-    // 옵션 있는 상품
-    itemsToShow = [
-      {
-        productId: directData.productId,
-        productName: directData.productName,
-        mainImg: directData.mainImg,
-        sellPrice: directData.sellPrice,
+    // 바로구매 모드
+    const hasOptions =
+      directData.options &&
+      Array.isArray(directData.options) &&
+      directData.options.length > 0;
 
-        options: directData.options.map((opt) => {
-          let optionText = "기본";
+    if (!hasOptions) {
+      // 옵션 없는 상품 → 기본 1개
+      itemsToShow = [
+        {
+          productId: directData.productId,
+          productName: directData.productName,
+          mainImg: directData.mainImg,
+          sellPrice: directData.sellPrice,
+          options: [
+            {
+              value: "기본",
+              count: directData.quantity ?? 1,
+            },
+          ],
+        },
+      ];
+    } else {
+      // 옵션 있는 상품
+      itemsToShow = [
+        {
+          productId: directData.productId,
+          productName: directData.productName,
+          mainImg: directData.mainImg,
+          sellPrice: directData.sellPrice,
 
-          // 상품 상세 페이지에서 넘겨준 단일 문자열 옵션
-          if (opt.value && opt.value.trim() !== "") {
-            optionText = opt.value;
-          }
+          options: directData.options.map((opt) => {
+            let optionText = "기본";
 
-          // 옵션은 opt.count 만 있으면 됨
-          const qty = opt.count ?? directData.quantity ?? 1;
+            // 상품 상세 페이지에서 넘겨준 단일 문자열 옵션
+            if (opt.value && opt.value.trim() !== "") {
+              optionText = opt.value;
+            }
 
-          return {
-            value: optionText,
-            count: qty,
-          };
-        }),
-      },
-    ];
-  }
+            // 옵션은 opt.count 만 있으면 됨
+            const qty = opt.count ?? directData.quantity ?? 1;
+
+            return {
+              value: optionText,
+              count: qty,
+            };
+          }),
+        },
+      ];
+    }
 
   } else {
     // 장바구니 결제 모드
@@ -265,18 +265,18 @@ export default function CheckoutPage() {
           mainImg: c.thumbnail,
           sellPrice: c.price,
           options: c.optionValue
-                ? [
-                    {
-                      value: `${c.optionTitle ?? ""} ${c.optionValue ?? ""}`, // e.g. ["색상 Ivory"]
-                      count: c.quantity,
-                    }
-                  ]
-                : [  // 옵션 없는 상품
-                    {
-                      value: "기본",  // ["기본"]
-                      count: c.quantity,
-                    }
-                  ],
+            ? [
+              {
+                value: `${c.optionTitle ?? ""} ${c.optionValue ?? ""}`, // e.g. ["색상 Ivory"]
+                count: c.quantity,
+              }
+            ]
+            : [  // 옵션 없는 상품
+              {
+                value: "기본",  // ["기본"]
+                count: c.quantity,
+              }
+            ],
         }))
       );
     }
@@ -397,11 +397,12 @@ export default function CheckoutPage() {
                 }`}
             >
               <div className="space-y-1">
-                <p className="font-medium text-black">
-                  {addr.name}{" "}
-                  {addr.isDefault && (
-                    <span className="text-sm text-gray-500">(기본)</span>
-                  )}
+                <p className="font-semibold flex items-center gap-2">
+                  <span>{addr.name}</span>
+
+                  {addr.zipcode && <span className="text-sm text-gray-500">{addr.zipcode}</span>}
+
+                  {addr.isDefault && <span className="text-sm text-gray-500">(기본)</span>}
                 </p>
                 <p className="text-gray-600 text-sm">
                   {addr.address} {addr.detail}
@@ -525,8 +526,8 @@ export default function CheckoutPage() {
               </button>
             </div>
           )}
-        </div> 
-        
+        </div>
+
         {/* ----------------------------- */}
         {/* 주문 상품 */}
         {/* ----------------------------- */}
@@ -572,29 +573,29 @@ export default function CheckoutPage() {
         {/* 결제 버튼 */}
         {/* ----------------------------- */}
         <div className="space-y-2">
-            <button
-              onClick={handleOrder}
-              disabled={loading}
-              className={`w-full py-3 rounded-xl font-semibold text-white cursor-pointer transition ${loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-black hover:bg-gray-900"
-                }`}
-            >
-              {loading
-                ? "결제 진행중..."
-                : `${totalPrice.toLocaleString()}원 결제하기`}
-            </button>
+          <button
+            onClick={handleOrder}
+            disabled={loading}
+            className={`w-full py-3 rounded-xl font-semibold text-white cursor-pointer transition ${loading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-black hover:bg-gray-900"
+              }`}
+          >
+            {loading
+              ? "결제 진행중..."
+              : `${totalPrice.toLocaleString()}원 결제하기`}
+          </button>
 
-            <button
-              onClick={handleCardPayment}
-              disabled={loading}
-              className={`w-full py-3 rounded-xl font-semibold border border-gray-300 cursor-pointer transition ${loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-white hover:bg-gray-200"
-                }`}
-            >
-              {loading ? "결제 진행중..." : "카드로 결제하기"}
-            </button>
+          <button
+            onClick={handleCardPayment}
+            disabled={loading}
+            className={`w-full py-3 rounded-xl font-semibold border border-gray-300 cursor-pointer transition ${loading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-white hover:bg-gray-200"
+              }`}
+          >
+            {loading ? "결제 진행중..." : "카드로 결제하기"}
+          </button>
         </div>
       </div>
     </div>

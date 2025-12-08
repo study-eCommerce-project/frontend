@@ -22,6 +22,7 @@ interface Address {
   phone: string;
   address: string;
   detail?: string;
+  zipcode: string;
 }
 
 interface OrderData {
@@ -78,7 +79,10 @@ export default function OrderCompletePage() {
         {order.address && (
           <Card title="배송지">
             <div className="space-y-1 text-gray-700">
-              <p className="font-medium">{order.address.name}</p>
+              <p className="font-semibold flex items-center gap-2">
+                <span>{order.address.name}</span>
+                <span className="text-sm text-gray-500">{order.address.zipcode}</span>
+              </p>
               <p>{order.address.phone}</p>
               <p>
                 {order.address.address} {order.address.detail || ""}
