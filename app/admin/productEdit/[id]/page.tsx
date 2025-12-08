@@ -141,9 +141,22 @@ export default function ProductEditPage() {
       consumerPrice: product.consumerPrice ?? 0,
     };
 
-    setProduct((prev) =>
-      prev ? { ...prev, options: [...prev.options, newOption] } : prev
-    );
+    setProduct((prev) => {
+      if (!prev) return prev;
+
+      // 새로운 옵션을 추가한 뒤 중복되지 않도록 처리
+      const existingOptions = prev.options || [];
+      const isDuplicate = existingOptions.some(
+        (opt) => opt.optionTitle === newOption.optionTitle && opt.optionValue === newOption.optionValue
+      );
+
+      if (isDuplicate) {
+        alert("이미 같은 옵션이 존재합니다.");
+        return prev;  // 중복된 옵션이 있을 경우 상태를 그대로 반환
+      }
+
+      return { ...prev, options: [...existingOptions, newOption] };
+    });
   };
 
   const updateOption = (
@@ -154,20 +167,21 @@ export default function ProductEditPage() {
     if (!product) return;
     setProduct((prev) => {
       if (!prev) return prev;
+
       const newOptions = [...prev.options];
       newOptions[idx] = { ...newOptions[idx], [field]: value };
+
       return { ...prev, options: newOptions };
     });
   };
 
+
   const removeOption = (index: number) => {
-    if (!product) return;
     setProduct((prev) =>
-      prev
-        ? { ...prev, options: prev.options.filter((_, i) => i !== index) }
-        : prev
+      prev ? { ...prev, options: prev.options.filter((_, i) => i !== index) } : prev
     );
   };
+
 
   const handleAddSubImage = () => {
     if (subImageUrl) {
