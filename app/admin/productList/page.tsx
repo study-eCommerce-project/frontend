@@ -15,6 +15,8 @@ interface Product {
 
 export default function AdminListPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL
+
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -124,32 +126,36 @@ export default function AdminListPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredProducts.map((p) => (
-                  <tr key={p.productId} className="border-b hover:bg-gray-50">
-                    <td className="py-2 px-4">{p.productId}</td>
-                    <td className="py-2 px-4">{p.productName}</td>
-                    <td className="py-2 px-4">{p.consumerPrice.toLocaleString()}원</td>
-                    <td className="py-2 px-4">{p.sellPrice.toLocaleString()}원</td>
-                    <td className="py-2 px-4">
-                      <Link href={`/admin/productEdit/${p.productId}`}>
-                        <img
-                          src={`${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}${p.mainImg}`}
-                          alt={p.productName}
-                          className="w-20 h-20 object-contain rounded hover:scale-105 transition-transform"
-                        />
-                      </Link>
-                    </td>
-                    <td className="py-2 px-4">
-                      {/* 삭제 버튼 */}
-                      <button
-                        onClick={() => handleDelete(p.productId)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        삭제
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {filteredProducts.map((p) => {
+                  // 상대 경로일 경우 BASE_URL을 결합하여 전체 URL 생성
+                  const imageUrl = p.mainImg.startsWith("http") ? p.mainImg : `${IMAGE_BASE_URL}${p.mainImg}`;
+                  return (
+                    <tr key={p.productId} className="border-b hover:bg-gray-50">
+                      <td className="py-2 px-4">{p.productId}</td>
+                      <td className="py-2 px-4">{p.productName}</td>
+                      <td className="py-2 px-4">{p.consumerPrice.toLocaleString()}원</td>
+                      <td className="py-2 px-4">{p.sellPrice.toLocaleString()}원</td>
+                      <td className="py-2 px-4">
+                        <Link href={`/admin/productEdit/${p.productId}`}>
+                          <img
+                            src={imageUrl}  // 동적으로 결합된 URL 사용
+                            alt={p.productName}
+                            className="w-20 h-20 object-contain rounded hover:scale-105 transition-transform"
+                          />
+                        </Link>
+                      </td>
+                      <td className="py-2 px-4">
+                        {/* 삭제 버튼 */}
+                        <button
+                          onClick={() => handleDelete(p.productId)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          삭제
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
                 {filteredProducts.length === 0 && (
                   <tr>
                     <td colSpan={5} className="text-center py-4 text-gray-500">
