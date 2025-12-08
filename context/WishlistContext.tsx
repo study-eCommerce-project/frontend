@@ -42,10 +42,14 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
       res.data.forEach((p: Product) => (info[p.productId] = p));
       setProductInfos(info);
 
-    } catch (err) {
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        // 로그인 안 되어있는 정상적인 케이스 → 로그 찍지 않고 조용히 빈값 처리
+        setLikedProducts([]);
+        setProductInfos({});
+    } else {
       console.error("wishlist fetch error", err);
-      setLikedProducts([]);
-      setProductInfos({});
+    }
     } finally {
       setLoading(false);
     }

@@ -46,9 +46,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         withCredentials: true, // 쿠키를 포함한 요청 (세션 유지)
       });
       setUserState(res.data);
-    } catch (error) {
+
+    } catch (err: any) {
+      if (err.response?.status === 401) {
       // 401이면 axiosConfig가 자동 로그아웃 + redirect
-      setUserState(null);
+        setUserState(null);
+      } else {
+      console.error("auth check error", err);
+      }
     }
   };
 
