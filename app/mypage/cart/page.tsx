@@ -36,6 +36,7 @@ import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { Trash2, Plus, Minus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function CartPage() {
   const router = useRouter();
@@ -80,7 +81,10 @@ export default function CartPage() {
 
           {/* 전체 삭제 버튼 */}
           <button
-            onClick={clearCart}
+            onClick={() => {
+              clearCart();
+              toast.success("장바구니가 비워졌습니다 🗑️");
+            }}
             className="absolute top-6 right-6 flex items-center gap-1 px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition cursor-pointer"
           >
             <Trash2 size={16} />
@@ -112,15 +116,15 @@ export default function CartPage() {
                     {item.productName}
                   </p>
 
-                {/* 옵션 출력 */}
-                {item.optionValue && (
-                  <p className="text-sm text-gray-600 mt-1">
-                    {item.optionTitle ? `${item.optionTitle}: ` : ""}
-                    <span className="font-medium">{item.optionValue}</span>
-                  </p>
-                )}
+                  {/* 옵션 출력 */}
+                  {item.optionValue && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      {item.optionTitle ? `${item.optionTitle}: ` : ""}
+                      <span className="font-medium">{item.optionValue}</span>
+                    </p>
+                  )}
 
-                {/* 품절 상태 */}
+                  {/* 품절 상태 */}
                   {item.soldOut && (
                     <p className="text-red-500 text-sm font-semibold mt-1">
                       품절된 상품입니다
@@ -147,11 +151,18 @@ export default function CartPage() {
                     </span>
 
                     <button
-                      onClick={() => updateQuantity(item.cartId, item.quantity + 1)}
+                      onClick={async () => {
+                        try {
+                          await updateQuantity(item.cartId, item.quantity + 1);
+                        } catch (err : any) {
+                          alert(err.response?.data || "재고 부족");
+                        }
+                      }}
                       className="p-1 bg-gray-300 rounded hover:bg-gray-400 transition cursor-pointer"
                     >
                       <Plus size={16} />
                     </button>
+
                   </div>
 
                   {/* 가격 + 삭제 */}
@@ -161,13 +172,15 @@ export default function CartPage() {
                     </p>
 
                     <button
-                      onClick={() => deleteItem(item.cartId)}
+                      onClick={() => {
+                        deleteItem(item.cartId);
+                        toast.success("상품이 삭제되었습니다 🗑️");
+                      }}
                       className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm cursor-pointer"
                     >
                       <Trash2 size={14} /> 삭제
                     </button>
                   </div>
-
                 </div>
               </div>
             </div>
@@ -200,7 +213,7 @@ export default function CartPage() {
           <button
             onClick={() => {
               sessionStorage.removeItem("checkoutData");  // 단건 구매 데이터(세션스토리지에 저장된 데이터) 삭제
-                  router.push("/order/checkout");
+              router.push("/order/checkout");
             }}
             className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-900 font-semibold transition cursor-pointer"
           >

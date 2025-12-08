@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface Product {
   productId: number;
@@ -46,7 +47,6 @@ export default function AdminListPage() {
     }
   }, [searchTerm, products]);
 
-
   // 상품 삭제
   const handleDelete = async (productId: number) => {
     if (!confirm("정말 이 상품을 삭제하시겠습니까?")) return;
@@ -67,11 +67,11 @@ export default function AdminListPage() {
       setProducts((prev) => prev.filter((p) => p.productId !== productId));
       setFilteredProducts((prev) => prev.filter((p) => p.productId !== productId));
 
-      alert("상품이 삭제되었습니다.");
+      toast.success("상품이 삭제되었습니다.");
 
     } catch (error: any) {
       console.error("상품 삭제 오류:", error);
-      alert(error.message);
+      toast.error(error.message);
     }
   };
 

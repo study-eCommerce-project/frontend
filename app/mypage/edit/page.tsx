@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 
 interface MemberInfo {
   name: string;
@@ -186,9 +187,9 @@ export default function MyInfoPage() {
         body: JSON.stringify(member),
       });
       if (!res.ok) throw new Error();
-      alert("내 정보 저장 완료");
+      toast.success("내 정보 저장 완료");
     } catch {
-      alert("저장 실패");
+      toast.error("저장 실패");
     } finally {
       setLoading(false);
     }
@@ -203,11 +204,11 @@ export default function MyInfoPage() {
         body: JSON.stringify(newAddress),
       });
       if (!res.ok) throw new Error();
-      alert("배송지 추가 완료");
+      toast.success("배송지 추가 완료");
       setNewAddress({ name: "", phone: "", address: "", detail: "", zipcode: "", isDefault: false });
       loadAddresses();
     } catch {
-      alert("추가 실패");
+      toast.error("추가 실패");
     }
   };
 
@@ -245,22 +246,22 @@ export default function MyInfoPage() {
         body: JSON.stringify(editData),
       });
       if (!res.ok) throw new Error();
-      alert("수정 완료");
+      toast.success("수정 완료");
       setEditId(null);
       loadAddresses();
     } catch {
-      alert("수정 실패");
+      toast.error("수정 실패");
     }
   };
 
   const handleDelete = async (item: Address) => {
     if (item.isVirtual) {
-      alert("회원가입 기본주소는 삭제할 수 없습니다.");
+      toast.error("회원가입 기본주소는 삭제할 수 없습니다.");
       return;
     }
 
     if (item.isDefault) {
-      alert("기본 배송지는 삭제할 수 없습니다.");
+      toast.error("기본 배송지는 삭제할 수 없습니다.");
       return;
     }
 
@@ -270,30 +271,39 @@ export default function MyInfoPage() {
         credentials: "include",
       });
       if (!res.ok) throw new Error();
-      alert("삭제 완료");
+      toast.success("삭제 완료");
       loadAddresses();
     } catch {
-      alert("삭제 실패");
+      toast.error("삭제 실패");
     }
   };
 
   const handleDefault = async (item: Address) => {
-    if (item.isVirtual) {
-      const newReal = await convertVirtualToReal();
-      if (newReal) {
-        await fetch(`${API_URL}/api/address/${newReal.id}/default`, {
-          method: "PATCH",
-          credentials: "include",
-        });
-        loadAddresses();
+    try {
+      if (item.isVirtual) {
+        const newReal = await convertVirtualToReal();
+        if (newReal) {
+          const res = await fetch(`${API_URL}/api/address/${newReal.id}/default`, {
+            method: "PATCH",
+            credentials: "include",
+          });
+          if (!res.ok) throw new Error();
+          toast.success("기본 배송지로 설정되었습니다.");
+          loadAddresses();
+        }
+        return;
       }
-      return;
+
+      const res = await fetch(`${API_URL}/api/address/${item.id}/default`, {
+        method: "PATCH",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error();
+      toast.success("기본 배송지로 설정되었습니다.");
+      loadAddresses();
+    } catch {
+      toast.error("기본 배송지 설정 실패");
     }
-    await fetch(`${API_URL}/api/address/${item.id}/default`, {
-      method: "PATCH",
-      credentials: "include",
-    });
-    loadAddresses();
   };
 
   return (
@@ -454,9 +464,8 @@ export default function MyInfoPage() {
 
                     {/* 삭제 (기본 배송지는 비활성화) */}
                     <button
-                      className={`cursor-pointer ${
-                        a.isDefault ? "text-gray-400 cursor-not-allowed" : "text-red-500"
-                      }`}
+                      className={`cursor-pointer ${a.isDefault ? "text-gray-400 cursor-not-allowed" : "text-red-500"
+                        }`}
                       disabled={a.isDefault}
                       onClick={() => !a.isDefault && handleDelete(a)}
                     >

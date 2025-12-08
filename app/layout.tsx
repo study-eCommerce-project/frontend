@@ -9,6 +9,7 @@
  * - WishlistProvider 역시 클라이언트 훅을 사용하므로 Providers 영역 안에서 실행해야 함
  * - ClientRoot는 전역 상태 초기화나 Layout hydration 같은 클라이언트 사이드 작업을 담당.
  */
+
 import "./globals.css";
 import { Providers } from "./providers";
 import ClientRoot from "./ClientRoot";
@@ -16,7 +17,6 @@ import { WishlistProvider } from "../context/WishlistContext"; // 경로는 프�
 import React from "react";
 import Script from "next/script";
 import { Toaster } from "react-hot-toast";
-
 
 export const metadata = {
   title: "YDJ",

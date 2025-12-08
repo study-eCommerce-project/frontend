@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useWishlist } from "../../../context/WishlistContext";
 import Link from "next/link";
 import { Trash2, ArrowUpDown } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function WishlistPage() {
   const { 
@@ -68,7 +69,14 @@ export default function WishlistPage() {
             </button>
 
             <button
-              onClick={() => sortedList.forEach((id) => toggleWishlist(id))}
+              onClick={() => {
+                if (sortedList.length === 0) {
+                  toast('삭제할 상품이 없습니다.');
+                  return;
+                }
+                sortedList.forEach((id) => toggleWishlist(id));
+                toast.success('찜한 상품을 모두 삭제했습니다.');
+              }}
               className="flex items-center gap-1 px-4 py-2 bg-red-600 text-white rounded-lg 
                 hover:bg-red-700 transition cursor-pointer"
             >
@@ -78,7 +86,7 @@ export default function WishlistPage() {
           </div>
         </div>
 
-        {/* 반응형 Grid (작아진 카드 버전) */}
+        {/* 반응형 Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {sortedList.map((productId) => {
             const product = productInfos[productId];
@@ -108,7 +116,10 @@ export default function WishlistPage() {
                 </p>
 
                 <button
-                  onClick={() => toggleWishlist(productId)}
+                  onClick={() => {
+                    toggleWishlist(productId);
+                    toast.success('상품을 삭제했습니다.');
+                  }}
                   className="mt-3 flex items-center justify-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition cursor-pointer text-xs sm:text-sm"
                 >
                   <Trash2 size={14} /> 삭제
@@ -117,7 +128,6 @@ export default function WishlistPage() {
             );
           })}
         </div>
-
       </div>
     </div>
   );

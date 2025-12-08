@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { toFullUrlCDN } from "@/lib/utils/toFullUrlCDN";
+import toast from "react-hot-toast";
 
 interface CheckoutOption {
   value?: string;
@@ -67,7 +68,7 @@ export default function CheckoutPage() {
   // -----------------------------
   const handleCardPayment = async () => {
     if (!selectedAddress) {
-      alert("배송지를 선택해주세요.");
+      toast.error("배송지를 선택해주세요.");
       return;
     }
 
@@ -93,7 +94,7 @@ export default function CheckoutPage() {
       });
 
       if (!res.ok) {
-        alert("결제 준비 중 오류 발생");
+        toast.error("결제 준비 중 오류 발생");
         return;
       }
 
@@ -112,7 +113,7 @@ export default function CheckoutPage() {
       });
 
       if (payment.code && payment.code !== "SUCCESS") {
-        alert("결제 취소 또는 실패");
+        toast.error("결제 취소 또는 실패");
         return;
       }
 
@@ -131,18 +132,18 @@ export default function CheckoutPage() {
       const verifyMsg = await verify.text();
 
       if (!verify.ok) {
-        alert("결제 검증 실패: " + verifyMsg);
+        toast.error("결제 검증 실패: " + verifyMsg);
         return;
       }
 
-      alert("결제가 완료되었습니다!");
+      toast.success("결제가 완료되었습니다!");
 
       clearCart();
       router.push("/order/complete");
 
     } catch (err) {
       console.error(err);
-      alert("결제 중 오류 발생");
+      toast.error("결제 중 오류 발생");
     } finally {
       setLoading(false);
     }
@@ -297,7 +298,7 @@ export default function CheckoutPage() {
   // -----------------------------
   const addNewAddress = async () => {
     if (!newAddress.name || !newAddress.phone || !newAddress.address) {
-      alert("이름, 전화번호, 주소는 필수입니다.");
+      toast.error("이름, 전화번호, 주소는 필수입니다.");
       return;
     }
 
@@ -311,7 +312,7 @@ export default function CheckoutPage() {
 
       if (!res.ok) throw new Error("배송지 추가 실패");
 
-      alert("배송지가 추가되었습니다!");
+      toast.success("배송지가 추가되었습니다!");
 
       // 서버에서 다시 불러오기
       await loadAddresses();
@@ -334,7 +335,7 @@ export default function CheckoutPage() {
   // -----------------------------
   const handleOrder = async () => {
     if (!selectedAddress) {
-      alert("배송지를 선택해주세요.");
+      toast.error("배송지를 선택해주세요.");
       return;
     }
 
@@ -366,7 +367,7 @@ export default function CheckoutPage() {
       router.push("/order/complete");
     } catch (err) {
       console.error("결제 실패", err);
-      alert("결제 중 오류가 발생했습니다.");
+      toast.error("결제 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }

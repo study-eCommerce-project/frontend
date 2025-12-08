@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "../../context/UserContext";
 import axios from "@/context/axiosConfig";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -18,7 +19,14 @@ export default function LoginPage() {
     e.preventDefault();
 
     if (!id || !pw) {
-      alert("아이디와 비밀번호를 입력하세요.");
+      toast.error("아이디와 비밀번호를 입력하세요.");
+      return;
+    }
+
+    // 이메일 형식 체크
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(id.trim())) {
+      toast.error("올바른 이메일 형식을 입력하세요.");
       return;
     }
 
@@ -32,19 +40,19 @@ export default function LoginPage() {
 
       const me = response.data;
 
+      if (me.role === "ADMIN") toast.success("관리자 로그인 성공");
+      else toast.success("로그인 성공");
+
       if (me.role === "ADMIN") router.push("/admin");
       else router.push("/");
 
     } catch (error: any) {
-      if (error.response?.status === 404) {
-        alert("존재하지 않는 사용자입니다.");
+      // 이메일 또는 비밀번호 오류를 한 메시지로 통합
+      if (error.response?.status === 401 || error.response?.status === 404) {
+        toast.error("이메일 또는 비밀번호가 일치하지 않습니다.");
         return;
       }
-      if (error.response?.status === 401) {
-        alert("비밀번호가 일치하지 않습니다.");
-        return;
-      }
-      alert("서버 오류 또는 네트워크 오류");
+      toast.error("서버 오류 또는 네트워크 오류");
     }
   };
 

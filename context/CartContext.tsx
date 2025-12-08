@@ -127,19 +127,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
    * - UI는 즉시 반영(Optimistic UI)
    * - 서버 업데이트는 디바운스로 처리
    * -------------------------------------- */
-  function updateQuantity(cartId: number, quantity: number) {
+  async function updateQuantity(cartId: number, quantity: number) {
     if (isAdmin || !user) return;
 
-    // UI 즉시 반영(먼저 수정)
+    // UI 즉시 업데이트
     setCart((prev) =>
-      prev.map((item) => (item.cartId === cartId ? { ...item, quantity } : item))
+      prev.map((item) =>
+        item.cartId === cartId ? { ...item, quantity } : item
+      )
     );
 
-    // 서버 요청은 디바운스 적용
-    axios
-      .put(`${API_URL}/api/cart/quantity`, { cartId, quantity })
-      .then(() => debouncedLoadCart());
+    try {
+      await axios.put(`${API_URL}/api/cart/quantity`, { cartId, quantity }, { withCredentials: true });
+    } catch (err : any) {
+      const msg = err?.response?.data || "오류 발생";
+      alert(msg);
+
+      // 실패하면 서버값으로 rollback
+      loadCart();
+    }
   }
+
 
   /** --------------------------------------
    * changeOption()

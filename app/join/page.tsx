@@ -1,6 +1,8 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function Signup() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -27,7 +29,7 @@ export default function Signup() {
 
   const handleSearchAddress = () => {
     if (!(window as any).daum?.Postcode) {
-      alert("주소 검색 기능 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+      toast.error("주소 검색 기능 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
       return;
     }
 
@@ -42,8 +44,15 @@ export default function Signup() {
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    // 이메일 형식 체크
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      toast.error("올바른 이메일 형식을 입력하세요.");
+      return;
+    }
+
     if (pw !== pwCheck) {
-      alert("비밀번호가 일치하지 않습니다.");
+      toast.error("비밀번호가 일치하지 않습니다.");
       return;
     }
 
@@ -62,14 +71,15 @@ export default function Signup() {
       });
 
       const result = await response.text();
-      alert(result);
-
       if (result.includes("성공")) {
+        toast.success(result);
         router.push("/login");
+      } else {
+        toast.error(result);
       }
     } catch (error) {
       console.error("회원가입 중 오류:", error);
-      alert("서버 연결 오류! 백엔드 실행 여부 확인하세요.");
+      toast.error("서버 연결 오류! 백엔드 실행 여부 확인하세요.");
     }
   };
 
@@ -214,6 +224,7 @@ function InputBox({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className="w-full p-3 border border-gray-300 rounded-lg text-black outline-none focus:ring-[1.5px] ring-black"
+        required
       />
     </div>
   );

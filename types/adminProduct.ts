@@ -20,6 +20,12 @@ export interface AdminProduct {
 
   options: AdminProductOption[]; // 옵션 상품일 경우 옵션 목록
   totalStock?: number;
+
+    blocks?: {                // AI 상품 설명 자동 생성을 위한 서브 이미지
+    type: string;
+    content?: string;
+    url?: string;
+  }[];
 }
 
 // 관리자용 상품 옵션 타입 (product_option table 기준)

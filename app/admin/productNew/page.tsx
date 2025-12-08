@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 
 import Input from "../../ui/Input";
 import Button from "../../ui/Button";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Image } from "lucide-react";
+import toast from "react-hot-toast";
 
 import type { AdminProduct, AdminProductOption } from "@/types/adminProduct";
 import type { CategoryTree } from "@/types/category";
@@ -13,6 +14,7 @@ import type { CategoryTree } from "@/types/category";
 export default function ProductNewPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const router = useRouter();
+  const [loadingDescription, setLoadingDescription] = useState(false);
 
   // ------------------------------
   // 상품 상태
@@ -32,7 +34,6 @@ export default function ProductNewPage() {
     categoryCode: "",
     options: [],
   });
-
 
   // ------------------------------
   // 총 재고 계산 
@@ -91,10 +92,29 @@ export default function ProductNewPage() {
     }));
   };
 
-  const removeSubImage = (index: number) => {
-    setProduct((prev) => ({
+  // ------------------ 이미지 ------------------
+  const handleAddSubImage = () => {
+    if (!subImageUrl) return; // 빈 값이면 종료
+
+    setProduct(prev => ({
       ...prev,
-      subImages: prev.subImages?.filter((_, i) => i !== index),
+      subImages: [
+        ...(prev.subImages ?? []), // 기존 이미지 배열 유지
+        {
+          imageUrl: subImageUrl,                       // 새 이미지 URL
+          sortOrder: (prev.subImages?.length ?? 0) + 1, // 정렬 순서 (1부터 시작)
+          productId: prev.productId || 0,              // productId (신규 생성엔 0)
+        }
+      ]
+    }));
+
+    setSubImageUrl(""); // 입력창 비우기
+  };
+
+  const removeSubImage = (idx: number) => {
+    setProduct(prev => ({
+      ...prev,
+      subImages: prev.subImages?.filter((_, i) => i !== idx) ?? [],
     }));
   };
 
@@ -110,13 +130,53 @@ export default function ProductNewPage() {
       .catch(console.error);
   }, [API_URL]);
 
-  // ------------------------------
-  // 저장
-  // ------------------------------
+  // ------------------ AI 상품 설명 자동 생성 ------------------
+  const handleGenerateDescription = async () => {
+    if (!product.productName) {
+      toast.error("상품명을 먼저 입력해주세요.");
+      return;
+    }
+
+    const imageUrls = [
+      product.mainImg,
+      ...((product.subImages ?? []).map(img => img.imageUrl))
+    ];
+
+    setLoadingDescription(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/products/generate-description`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: product.productName,
+          price: product.sellPrice,
+          options: product.options.map((opt) => opt.optionValue).join(", "),
+          category_path: product.categoryCode,
+          image_urls: imageUrls,
+        }), // JSON.stringify 끝
+      });   // fetch 옵션 객체 끝, fetch() 끝
+
+     const data = await res.json();
+
+      setProduct(prev => ({
+        ...prev,
+        description: data.description ?? "",
+        blocks: data.blocks ?? []
+      }));
+
+    } catch (err) {
+      console.error(err);
+      toast.error("AI 설명 생성 중 오류가 발생했습니다.");
+    } finally {
+      setLoadingDescription(false);
+    }
+  };
+
+  // ------------------ 저장 ------------------
   const handleSave = async () => {
-    if (!product.productName) return alert("상품명을 입력해주세요.");
-    if (!product.categoryCode) return alert("카테고리를 선택해주세요.");
-    if (!product.sellPrice) return alert("판매가를 입력해주세요.");
+    if (!product.productName) return toast.error("상품명을 입력해주세요.");
+    if (!product.categoryCode) return toast.error("카테고리를 선택해주세요.");
+    if (!product.sellPrice) return toast.error("판매가를 입력해주세요.");
 
     // 단품 / 옵션 상품에 따라 payload 정리
     const payload: AdminProduct = {
@@ -136,13 +196,6 @@ export default function ProductNewPage() {
         })) || [],
     };
 
-    // 이미지를 ProductImage로 추가하기
-    const images = product.subImages?.map((imgUrl, idx) => ({
-      imageUrl: `${imgUrl}`, // 이미지 URL
-      sortOrder: idx + 1, // 이미지 순서
-      productId: product.productId,
-    }));
-
     try {
       const res = await fetch(`${API_URL}/api/admin/products/create`, {
         method: "POST",
@@ -151,34 +204,14 @@ export default function ProductNewPage() {
       });
 
       if (!res.ok) throw new Error("저장 실패");
-      alert("상품이 등록되었습니다.");
+      toast.success("상품이 등록되었습니다.");
       router.push("/admin/productList");
 
     } catch (err) {
       console.error(err);
-      alert("상품 등록 중 오류가 발생했습니다.");
+      toast.error("상품 등록 중 오류가 발생했습니다.");
     }
   };
-
-  const handleAddSubImage = () => {
-    if (subImageUrl) {
-      setProduct((prev) => ({
-        ...prev,
-        subImages: [
-          ...(prev.subImages || []), // subImages가 없으면 빈 배열로 처리
-          {
-            imageUrl: subImageUrl,  // 추가할 이미지 URL
-            sortOrder: prev.subImages ? prev.subImages.length + 1 : 1, // 순서 지정
-            productId: prev.productId || 0,  // productId를 추가 (없으면 기본값 0)
-          },
-        ],
-      }));
-      setSubImageUrl("");  // URL 추가 후 입력창 비우기
-    }
-  };
-
-
-
 
   // ==============================
   // 렌더링
@@ -250,7 +283,6 @@ export default function ProductNewPage() {
             </div>
           )}
         </div>
-
 
           {/* 우측: 상품 정보 */}
           <div className="flex flex-col gap-6 md:w-1/2">

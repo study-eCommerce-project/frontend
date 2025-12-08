@@ -2,36 +2,37 @@
 
 import { useEffect, useState } from "react";
 
-export default function IntroPage() {
+interface IntroProps {
+  onFinish: () => void;
+}
+
+export default function IntroPage({ onFinish }: IntroProps) {
   const introLines = ["Your Daily", "Journey"];
   const [mounted, setMounted] = useState(false);
 
-  // 처음 방문 체크
   useEffect(() => {
     const seen = sessionStorage.getItem("introSeen");
 
     if (seen === "true") {
-      window.location.href = "/";
+      onFinish(); // 이미 본 경우 바로 홈 화면
       return;
     }
 
     setMounted(true);
 
-    // 자동 이동 (3초 후)
     const timer = setTimeout(() => {
       sessionStorage.setItem("introSeen", "true");
-      window.location.href = "/";
+      onFinish(); // 3초 후 홈 화면으로
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [onFinish]);
 
   const goHome = () => {
     sessionStorage.setItem("introSeen", "true");
-    window.location.href = "/";
+    onFinish(); // 버튼 클릭 시 홈 화면으로
   };
 
-  // 글자 애니메이션 + 랜덤 순서
   const renderLine = (line: string, lineIdx: number) => {
     const chars = line.split("");
 
@@ -45,7 +46,6 @@ export default function IntroPage() {
     return chars.map((char, idx) => {
       const delay = delays[idx];
 
-      // O → 회전 이미지
       if (lineIdx === 1 && char.toLowerCase() === "o") {
         return (
           <img
@@ -85,7 +85,7 @@ export default function IntroPage() {
         onClick={goHome}
         className="mt-10 px-8 py-4 bg-gray-700 text-white rounded-full text-xl font-semibold cursor-pointer"
       >
-        Start Now
+        Shop Now
       </button>
     </div>
   );
