@@ -147,11 +147,18 @@ export default function CartPage() {
                     </span>
 
                     <button
-                      onClick={() => updateQuantity(item.cartId, item.quantity + 1)}
+                      onClick={async () => {
+                        try {
+                          await updateQuantity(item.cartId, item.quantity + 1);
+                        } catch (err: any) {
+                          alert(err.response?.data || "재고 부족");
+                        }
+                      }}
                       className="p-1 bg-gray-300 rounded hover:bg-gray-400 transition cursor-pointer"
                     >
                       <Plus size={16} />
                     </button>
+
                   </div>
 
                   {/* 가격 + 삭제 */}
