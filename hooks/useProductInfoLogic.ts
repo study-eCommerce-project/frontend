@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { toggleLike } from "@/lib/api/product";
 import { SelectedOption, Option, Product } from "@/types/product";
 import type { User } from "@/context/UserContext";
+import toast from "react-hot-toast";
+import { showCartToast } from "@/components/CartToast";
 
 /**
  * 상품 상세에서 필요한 모든 비즈니스 로직을 담당하는 커스텀 훅
@@ -43,33 +45,38 @@ export function useProductInfoLogic(
 
   const handleLike = async () => {
     if (!user) {
-      alert("로그인이 필요합니다.");
+      toast.error("로그인이 필요합니다.");
       router.push("/login");
       return;
     }
+
     if (likeLoading) return; // 중복 클릭 방지
 
     try {
       setLikeLoading(true);
 
-      // 백엔드에서 토글 처리
+      // 백엔드에서 좋아요 토글 처리
       const data = await toggleLike(product.productId);
       // data = { liked: boolean, likes: number }
 
-      setLiked(data.liked);      // UI 반영
-      setLikeCount(data.likes);  // 숫자 반영
+      setLiked(data.liked);
+      setLikeCount(data.likes);
 
-      // 찜 목록 동기화는 서버 응답 기반으로 직접 업데이트
+      // ---- toast 메시지 표시 ----
       if (data.liked) {
-        // 찜 추가
-        toggleWishlist?.(product.productId, true);
+        toast.success("좋아요를 눌렀습니다 ❤️");
       } else {
-        // 찜 제거
-        toggleWishlist?.(product.productId, false);
+        toast("좋아요를 취소했습니다 💔");
+      }
+
+      // ---- 찜 목록 상태 동기화 ----
+      if (toggleWishlist) {
+        toggleWishlist(product.productId, data.liked);
       }
 
     } catch (err) {
       console.error("좋아요 실패:", err);
+      toast.error("좋아요 처리 중 오류가 발생했습니다.");
     } finally {
       setLikeLoading(false);
     }
@@ -101,26 +108,26 @@ export function useProductInfoLogic(
    * - 옵션이 여러 개 선택된 경우 반복해서 addToCart 호출
    */
   const handleAddToCart = async (singleCount: number) => {
-    if (!user) return router.push("/login");
-
+    if (!user) {
+      toast.error("로그인이 필요합니다.");
+      return router.push("/login");
+    }
     // 옵션 상품인데 옵션 선택 안했을 경우
     if (product.isOption && selectedOptions.length === 0) {
-      return alert("옵션을 선택해주세요!");
+      return toast.error("옵션을 선택해주세요.");
     }
+
 
     try {
       if (product.isOption) {
         for (const opt of selectedOptions) {
-          // CartContext의 addToCart 호출
-          await addToCart(product.productId, opt.optionValue, opt.count);  // 수정: optionValue로 처리
+          await addToCart(product.productId, opt.optionValue, opt.count);
         }
       } else {
         await addToCart(product.productId, null, 1);
       }
 
-      if (window.confirm("장바구니에 담았습니다.\n장바구니 페이지로 이동할까요?")) {
-        router.push("/mypage/cart");
-      }
+      showCartToast(router);   // ← 버튼 있는 토스트 호출
     } catch (err) {
       console.error("장바구니 추가 실패:", err);
       alert("장바구니 추가 실패");
@@ -134,12 +141,17 @@ export function useProductInfoLogic(
    * - /order/checkout 페이지로 이동
    */
   const handleBuyNow = (singleCount: number) => {
-    if (!user) return router.push("/login");
-    if (product.isOption && selectedOptions.length === 0)
-      return alert("옵션을 선택해주세요!");
+    if (!user) {
+      toast.error("로그인이 필요합니다.");
+      return router.push("/login");
+    }
+
+    if (product.isOption && selectedOptions.length === 0) {
+      return toast.error("옵션을 선택해주세요.");
+    }
 
     const orderInfo = product.isOption
-    ? {
+      ? {
         // 옵션 상품
         productId: product.productId,
         productName: product.productName,
@@ -147,7 +159,7 @@ export function useProductInfoLogic(
         sellPrice: product.sellPrice,
         options: selectedOptions, // 옵션 수량 already inside
       }
-    : {
+      : {
         // 단일 상품
         productId: product.productId,
         productName: product.productName,
@@ -172,11 +184,11 @@ export function useProductInfoLogic(
       prev.map((option) =>
         option.optionId === optionId
           ? {
-              ...option,
-              count: increment
-                ? option.count + 1
-                : Math.max(1, option.count - 1), // 수량 최소값 1
-            }
+            ...option,
+            count: increment
+              ? option.count + 1
+              : Math.max(1, option.count - 1), // 수량 최소값 1
+          }
           : option
       )
     );

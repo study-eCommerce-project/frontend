@@ -8,6 +8,7 @@ import { useUser } from "@/context/UserContext";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 import { Heart, Plus, Minus, X, Ban } from "lucide-react";
+import toast from "react-hot-toast";
 
 /**
  * 상품 상세 정보 UI 컴포넌트
@@ -212,7 +213,7 @@ export default function ProductInfo({ product, isAdmin }: ProductInfoProps) {
       )}
 
       {/* 옵션이 없는 단일 상품 수량 조절 */}
-      {!product.isOption && (
+      {!product.isOption && product.stock > 0 && (
         <div className="flex flex-col gap-4 mb-6 w-full">
           <div className="border p-4 rounded-xl shadow bg-white flex justify-between items-center">
             <div className="flex-1">
@@ -234,7 +235,15 @@ export default function ProductInfo({ product, isAdmin }: ProductInfoProps) {
                 <span className="font-semibold text-black">{singleCount}</span>
 
                 <button
-                  onClick={() => setSingleCount(prev => prev + 1)}
+                  onClick={() => {
+                    if ((product.stock ?? 0) <= singleCount) {
+                      toast.error("더 이상 수량을 늘릴 수 없습니다.");
+                      return;
+                    }
+
+
+                    setSingleCount(prev => prev + 1);
+                  }}
                   className="p-2 bg-gray-200 rounded hover:bg-gray-300 cursor-pointer"
                 >
                   <Plus size={16} />
@@ -280,15 +289,19 @@ export default function ProductInfo({ product, isAdmin }: ProductInfoProps) {
                   <span className="font-semibold text-black">{item.count}</span>
 
                   <button
-                    onClick={() =>
+                    onClick={() => {
+                      if ((item.stock ?? 0) <= item.count) {
+                        toast.error("선택한 옵션의 재고가 부족합니다.");
+                        return;
+                      }
                       setSelectedOptions(prev =>
                         prev.map(p =>
                           p.optionId === item.optionId
                             ? { ...p, count: p.count + 1 }
                             : p
                         )
-                      )
-                    }
+                      );
+                    }}
                     className="p-2 bg-gray-200 rounded hover:bg-gray-300 cursor-pointer"
                   >
                     <Plus size={16} />
@@ -334,33 +347,47 @@ export default function ProductInfo({ product, isAdmin }: ProductInfoProps) {
             {likeCount.toLocaleString()}
           </span>
         </button>
-        
+
         {/* 장바구니 + 구매하기 */}
         {!isAdmin && (
           <div className="flex flex-1 gap-4">
             <button
-              onClick={() =>
+              onClick={() => {
+                // 품절 체크 (옵션 없는 단일 상품)
+                if (!product.isOption && product.stock === 0) {
+                  toast.error("품절된 상품입니다.");
+                  return;
+                }
+
+                // 정상 장바구니 추가
                 product.isOption
                   ? handleAddToCart(1)
-                  : handleAddToCart(singleCount)
-              }
-             className="flex-1 bg-black text-white py-3 rounded-xl cursor-pointer"
+                  : handleAddToCart(singleCount);
+              }}
+              className="flex-1 bg-black text-white py-3 rounded-xl cursor-pointer"
             >
               장바구니
             </button>
 
             <button
-              onClick={() =>
+              onClick={() => {
+                // 품절 체크
+                if (!product.isOption && product.stock === 0) {
+                  toast.error("품절된 상품입니다.");
+                  return;
+                }
+
+                // 정상 구매 실행
                 product.isOption
                   ? handleBuyNow(1)
-                  : handleBuyNow(singleCount)
-              }
+                  : handleBuyNow(singleCount);
+              }}
               className="flex-1 bg-white text-black py-3 rounded-xl border cursor-pointer"
             >
               구매하기
             </button>
           </div>
-        )}  
+        )}
       </div>
     </div>
   );

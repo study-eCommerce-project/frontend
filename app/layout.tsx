@@ -15,6 +15,8 @@ import ClientRoot from "./ClientRoot";
 import { WishlistProvider } from "../context/WishlistContext"; // 경로는 프로젝트 구조에 맞게 조정
 import React from "react";
 import Script from "next/script";
+import { Toaster } from "react-hot-toast";
+
 
 export const metadata = {
   title: "YDJ",
@@ -55,6 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <WishlistProvider>
             <ClientRoot>
               <main className="flex-1 w-full">{children}</main>
+              <Toaster />
             </ClientRoot>
           </WishlistProvider>
         </Providers>
