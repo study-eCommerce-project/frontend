@@ -158,11 +158,11 @@ export default function ProductNewPage() {
 
      const data = await res.json();
 
-      setProduct(prev => ({
-        ...prev,
-        description: data.description ?? "",
-        blocks: data.blocks ?? []
-      }));
+     setProduct(prev => ({
+      ...prev,
+      description: data.description ?? "",   // 텍스트 
+      blocks: data.blocks ?? []              // 블록도 저장 가능
+    }));
 
     } catch (err) {
       console.error(err);
@@ -182,6 +182,7 @@ export default function ProductNewPage() {
     const payload: AdminProduct = {
       ...product,
       stock: product.isOption ? 0 : product.stock,
+      description: JSON.stringify(product.blocks ?? []),
       options: product.isOption
         ? product.options.map((opt) => ({
             ...opt,
@@ -398,6 +399,7 @@ export default function ProductNewPage() {
                 onChange={(e) => handleChange("description", e.target.value)}
               />
 
+              {/* 블록 미리보기 렌더링 */}
               <div className="mt-4 space-y-4">
                 {product.blocks?.map((block, idx) => (
                   <div key={idx}>
@@ -406,7 +408,6 @@ export default function ProductNewPage() {
                         {block.content}
                       </p>
                     )}
-
                     {block.type === "image" && (
                       <img src={block.url} className="w-full rounded-lg" />
                     )}

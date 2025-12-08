@@ -21,7 +21,12 @@ export interface AdminProduct {
   options: AdminProductOption[]; // 옵션 상품일 경우 옵션 목록
   totalStock?: number;
 
-  blocks?: ProductBlock[];
+  // AI 상세 블록 
+  blocks?: {
+    type: "text" | "image";
+    content?: string;
+    url?: string;
+  }[];
 }
 
 // AI 상품 설명 자동 생성을 위한 서브 이미지
@@ -46,7 +51,6 @@ export interface AdminProductOption {
   colorCode?: string;         // 색상 코드 (#FF0000 등, 색상 옵션일 때만 사용 가능)
   consumerPrice?: number;     // 옵션 소비자가(필요 없으면 사용 안 해도 됨)
 }
-
 
 export interface ProductImage {
   imageUrl: string;   // 이미지 URL
