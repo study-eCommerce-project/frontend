@@ -133,7 +133,7 @@ export default function AdminListPage() {
                     <td className="py-2 px-4">
                       <Link href={`/admin/productEdit/${p.productId}`}>
                         <img
-                          src={`${process.env.NEXT_PUBLIC_IMAGE_BASE_URL}${p.mainImg}`}
+                          src={p.mainImg}
                           alt={p.productName}
                           className="w-20 h-20 object-contain rounded hover:scale-105 transition-transform"
                         />
