@@ -98,7 +98,7 @@ export default function HomePage() {
   const currentProducts = filteredProducts.slice(startIdx, startIdx + pageSize);
 
   if (showIntro === null) return null; // 체크 완료 전 렌더링 X
-  
+
   // ▣ 렌더링
   return showIntro ? (
     <IntroPage onFinish={() => setShowIntro(false)} />
@@ -129,8 +129,8 @@ export default function HomePage() {
               setCurrentPage(1);
             }}
             className={`pb-1 text-sm cursor-pointer ${!selectedMain
-                ? "text-black font-semibold border-b-2 border-black"
-                : "text-gray-500 hover:text-gray-800"
+              ? "text-black font-semibold border-b-2 border-black"
+              : "text-gray-500 hover:text-gray-800"
               }`}
           >
             전체보기
@@ -144,8 +144,8 @@ export default function HomePage() {
                 setCurrentPage(1);
               }}
               className={`pb-1 text-sm cursor-pointer ${selectedMain === cat.code
-                  ? "text-black font-semibold border-b-2 border-black"
-                  : "text-gray-500 hover:text-gray-800"
+                ? "text-black font-semibold border-b-2 border-black"
+                : "text-gray-500 hover:text-gray-800"
                 }`}
             >
               {cat.title}
@@ -198,16 +198,16 @@ export default function HomePage() {
                 <p className="text-gray-800 text-center text-base font-medium mt-3 mb-1 line-clamp-2 min-h-[40px]">
                   {truncate(p.productName)}
                 </p>
-                <p className="text-gray-500 text-sm line-through">
+                <p
+                  className={`text-gray-500 text-sm line-through ${p.consumerPrice <= p.sellPrice ? "invisible" : ""}`}
+                >
                   {p.consumerPrice.toLocaleString()}원
                 </p>
+
                 <p className="text-black font-bold mt-1 text-lg">
                   {p.consumerPrice > p.sellPrice && (
                     <span className="text-red-500 px-2 font-bold">
-                      {Math.round(
-                        ((p.consumerPrice - p.sellPrice) / p.consumerPrice) * 100
-                      )}
-                      %
+                      {Math.round(((p.consumerPrice - p.sellPrice) / p.consumerPrice) * 100)}%
                     </span>
                   )}
                   {p.sellPrice.toLocaleString()}원
@@ -232,8 +232,8 @@ export default function HomePage() {
               key={page}
               onClick={() => setCurrentPage(page)}
               className={`px-3 py-1 border rounded transition cursor-pointer ${currentPage === page
-                  ? "bg-black text-white border-black"
-                  : "hover:bg-gray-100"
+                ? "bg-black text-white border-black"
+                : "hover:bg-gray-100"
                 }`}
             >
               {page}
