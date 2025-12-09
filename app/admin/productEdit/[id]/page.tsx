@@ -26,6 +26,8 @@ export default function ProductEditPage() {
   const [selectedBig, setSelectedBig] = useState<string>("");
   const [selectedMid, setSelectedMid] = useState<string>("");
   const [subImageUrl, setSubImageUrl] = useState<string>("");
+  const [products, setProducts] = useState([]);
+
 
 
   // ------------------------------
@@ -178,9 +180,14 @@ export default function ProductEditPage() {
 
 
   const removeOption = (index: number) => {
-    setProduct((prev) =>
-      prev ? { ...prev, options: prev.options.filter((_, i) => i !== index) } : prev
-    );
+    setProduct((prev) => {
+      if (!prev) return prev;
+
+      // 옵션 삭제 후 새로운 배열 반환
+      const newOptions = prev.options.filter((_, i) => i !== index);
+
+      return { ...prev, options: newOptions };  // 상태 갱신
+    });
   };
 
 
@@ -291,6 +298,23 @@ export default function ProductEditPage() {
 
       // 저장 성공 후 메시지 출력
       toast.success("상품 정보가 저장되었습니다.");
+
+      
+      // 상품 수정 후, 상품 목록 새로 고침
+      const fetchUpdatedProducts = async () => {
+        try {
+          const res = await fetch(`${API_URL}/api/products/list`);
+          const data = await res.json();
+          setProducts(data);  // 상품 목록 상태 갱신
+        } catch (err) {
+          console.error("상품 목록을 불러오는 중 오류 발생", err);
+        }
+      };
+
+      useEffect(() => {
+        fetchUpdatedProducts();  // 페이지가 로드되면 상품 목록을 불러오기
+      }, []);
+
 
       // 상품 목록 페이지로 이동
       router.push("/admin/productList");
