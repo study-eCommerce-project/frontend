@@ -84,18 +84,22 @@ export default function ProductInfo({ product, isAdmin }: ProductInfoProps) {
       {/* 가격 정보 */}
       <div className="mb-6 text-center md:text-left space-y-1">
         {product.consumerPrice && product.consumerPrice > product.sellPrice && (
-          <span className="text-red-500 text-lg font-semibold">
+          <span
+            className={`text-red-500 text-lg font-semibold ${!product.consumerPrice || product.consumerPrice <= product.sellPrice ? "invisible" : ""
+              }`}
+          >
             {Math.round(
               ((product.consumerPrice - product.sellPrice) / product.consumerPrice) * 100
             )}
             % 할인
           </span>
         )}
-        {product.consumerPrice && (
-          <p className="text-gray-400 text-sm line-through">
-            {product.consumerPrice.toLocaleString()}원
-          </p>
-        )}
+        <p
+          className={`text-gray-400 text-sm line-through ${!product.consumerPrice || product.consumerPrice <= product.sellPrice ? "invisible" : ""
+            }`}
+        >
+          {product.consumerPrice?.toLocaleString()}원
+        </p>
         <p className="text-3xl font-bold text-black">{product.sellPrice?.toLocaleString()}원</p>
         <p className="text-gray-600 text-sm">재고: {product.stock}개</p>
 

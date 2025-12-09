@@ -137,10 +137,21 @@ export default function CartPage() {
 
                   {/* 수량 제어 */}
                   <div className="flex items-center gap-2">
+                    {/* 수량 감소 버튼 */}
                     <button
-                      onClick={() =>
-                        updateQuantity(item.cartId, Math.max(1, item.quantity - 1))
-                      }
+                      onClick={async () => {
+                        // 프론트에서 재고 초과 미리 차단
+                        if (item.quantity <= 1) {
+                          toast.error("최소 수량은 1개입니다.");  // 여기서 메시지 띄우고
+                          return;                               // 그 다음에 return
+                        }
+
+                        try {
+                          await updateQuantity(item.cartId, item.quantity - 1);
+                        } catch (err: any) {
+                          toast.error(err.response?.data || "최소 수량은 1개입니다.");
+                        }
+                      }}
                       className="p-1 bg-gray-300 rounded hover:bg-gray-400 transition cursor-pointer"
                     >
                       <Minus size={16} />
@@ -150,19 +161,24 @@ export default function CartPage() {
                       {item.quantity}
                     </span>
 
+                    {/* 수량 증가 버튼 */}
                     <button
                       onClick={async () => {
+                        if (item.quantity >= item.stock) {
+                          toast.error("재고가 부족합니다."); 
+                          return;
+                        }
+
                         try {
                           await updateQuantity(item.cartId, item.quantity + 1);
-                        } catch (err : any) {
-                          alert(err.response?.data || "재고 부족");
+                        } catch (err: any) {
+                          toast.error(err.response?.data || "재고 부족");
                         }
                       }}
                       className="p-1 bg-gray-300 rounded hover:bg-gray-400 transition cursor-pointer"
                     >
                       <Plus size={16} />
                     </button>
-
                   </div>
 
                   {/* 가격 + 삭제 */}
