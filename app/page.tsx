@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import IntroPage from "./intro/page";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
@@ -21,7 +22,9 @@ interface MainCategory {
   title: string;
 }
 
-export default function Page() {
+export default function HomePage() {
+  const [showIntro, setShowIntro] = useState<boolean | null>(null);
+
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const BASE = process.env.NEXT_PUBLIC_IMAGE_BASE_URL;
 
@@ -45,29 +48,29 @@ export default function Page() {
   const truncate = (text: string, max = 15) =>
     text.length > max ? text.slice(0, max) + "..." : text;
 
-  // Intro check
+  // ▣ Intro 체크
   useEffect(() => {
     const seen = sessionStorage.getItem("introSeen");
-    if (seen !== "true") window.location.href = "/intro";
+    setShowIntro(seen === "true" ? false : true);
   }, []);
 
-  // Main categories
+  // ▣ Main categories
   useEffect(() => {
     fetch(`${API_URL}/api/categories/main`)
       .then((res) => res.json())
       .then((data) => setMainCategories(data))
       .catch(console.error);
-  }, []);
+  }, [API_URL]);
 
-  // Category tree
+  // ▣ Category tree
   useEffect(() => {
     fetch(`${API_URL}/api/categories/tree`)
       .then((res) => res.json())
       .then((data) => setCategoryTree(data.tree))
       .catch(console.error);
-  }, []);
+  }, [API_URL]);
 
-  // Products
+  // ▣ Products
   useEffect(() => {
     fetch(`${API_URL}/api/products/list`)
       .then((res) => res.json())
@@ -76,22 +79,17 @@ export default function Page() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [API_URL]);
 
-  // Filtering by main category
+  // ▣ 카테고리 필터링
   const filteredProducts =
     selectedMain && categoryTree
       ? (() => {
         const midList = categoryTree[selectedMain].children;
-
-        // leaf 코드 전체 수집
         const leafCodes = Object.values(midList).flatMap(
           (mid: any) => Object.keys(mid.children)
         );
-
-        return products.filter((p) =>
-          leafCodes.includes(p.categoryCode)
-        );
+        return products.filter((p) => leafCodes.includes(p.categoryCode));
       })()
       : products;
 
@@ -99,16 +97,12 @@ export default function Page() {
   const startIdx = (currentPage - 1) * pageSize;
   const currentProducts = filteredProducts.slice(startIdx, startIdx + pageSize);
 
-<<<<<<< HEAD
-  return (
-=======
   if (showIntro === null) return null; // 체크 완료 전 렌더링 X
 
   // ▣ 렌더링
   return showIntro ? (
     <IntroPage onFinish={() => setShowIntro(false)} />
   ) : (
->>>>>>> main
     <div className="w-full overflow-x-hidden">
 
       {/* ▣ 1. 배너 */}
@@ -129,7 +123,6 @@ export default function Page() {
       <div className="w-full border-b border-gray-200 bg-white sticky top-0 z-20">
         <div className="max-w-5xl mx-auto flex gap-6 px-4 py-3 overflow-x-auto whitespace-nowrap">
 
-          {/* 전체보기 */}
           <button
             onClick={() => {
               setSelectedMain(null);
@@ -143,7 +136,6 @@ export default function Page() {
             전체보기
           </button>
 
-          {/* 대분류 */}
           {mainCategories.map((cat) => (
             <button
               key={cat.code}
@@ -170,13 +162,11 @@ export default function Page() {
               ? mainCategories.find((c) => c.code === selectedMain)?.title
               : "전체 상품"}
           </h2>
-
           <p className="text-gray-500 text-sm mt-1">
             총 {filteredProducts.length}개 상품
           </p>
         </div>
 
-        {/* 로딩 */}
         {loading || !categoryTree ? (
           <div className="w-full flex flex-col items-center justify-center py-10">
             <p className="text-gray-700 mb-3">상품 불러오는 중...</p>
@@ -200,43 +190,24 @@ export default function Page() {
               >
                 <div className="w-full rounded-xl overflow-hidden flex items-center justify-center bg-white">
                   <img
-<<<<<<< HEAD
-                    src={`${BASE}${p.mainImg}`|| "/images/default_main.png"}
-=======
                     src={p.mainImg ? `${BASE}${p.mainImg}` : "/images/default_main.png"}
->>>>>>> main
                     alt={p.productName}
                     className="w-full h-full object-contain"
                   />
                 </div>
-
                 <p className="text-gray-800 text-center text-base font-medium mt-3 mb-1 line-clamp-2 min-h-[40px]">
                   {truncate(p.productName)}
                 </p>
-<<<<<<< HEAD
-
-                <p className="text-gray-500 text-sm line-through">
-=======
                 <p
                   className={`text-gray-500 text-sm line-through ${p.consumerPrice <= p.sellPrice ? "invisible" : ""}`}
                 >
->>>>>>> main
                   {p.consumerPrice.toLocaleString()}원
                 </p>
 
                 <p className="text-black font-bold mt-1 text-lg">
                   {p.consumerPrice > p.sellPrice && (
                     <span className="text-red-500 px-2 font-bold">
-<<<<<<< HEAD
-                      {Math.round(
-                        ((p.consumerPrice - p.sellPrice) /
-                          p.consumerPrice) *
-                        100
-                      )}
-                      %
-=======
                       {Math.round(((p.consumerPrice - p.sellPrice) / p.consumerPrice) * 100)}%
->>>>>>> main
                     </span>
                   )}
                   {p.sellPrice.toLocaleString()}원
@@ -270,16 +241,13 @@ export default function Page() {
           ))}
 
           <button
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
             className="px-3 py-1 hover:bg-gray-100 transition cursor-pointer"
           >
             <ChevronRight />
           </button>
         </div>
-
       </div>
     </div>
   );

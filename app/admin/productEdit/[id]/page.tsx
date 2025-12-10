@@ -23,13 +23,7 @@ export default function ProductEditPage() {
   const [selectedBig, setSelectedBig] = useState<string>("");
   const [selectedMid, setSelectedMid] = useState<string>("");
   const [subImageUrl, setSubImageUrl] = useState<string>("");
-<<<<<<< HEAD
-  const [products, setProducts] = useState([]);
-
-
-=======
   const [deletedOptionIds, setDeletedOptionIds] = useState<number[]>([]); // 옵션 삭제를 위한 배열
->>>>>>> main
 
   // ------------------------------
   // 카테고리 트리 fetch
@@ -143,22 +137,9 @@ export default function ProductEditPage() {
       consumerPrice: product.consumerPrice ?? 0,
     };
 
-    setProduct((prev) => {
-      if (!prev) return prev;
-
-      // 새로운 옵션을 추가한 뒤 중복되지 않도록 처리
-      const existingOptions = prev.options || [];
-      const isDuplicate = existingOptions.some(
-        (opt) => opt.optionTitle === newOption.optionTitle && opt.optionValue === newOption.optionValue
-      );
-
-      if (isDuplicate) {
-        alert("이미 같은 옵션이 존재합니다.");
-        return prev;  // 중복된 옵션이 있을 경우 상태를 그대로 반환
-      }
-
-      return { ...prev, options: [...existingOptions, newOption] };
-    });
+    setProduct((prev) =>
+      prev ? { ...prev, options: [...prev.options, newOption] } : prev
+    );
   };
 
   const updateOption = (
@@ -169,25 +150,13 @@ export default function ProductEditPage() {
     if (!product) return;
     setProduct((prev) => {
       if (!prev) return prev;
-
       const newOptions = [...prev.options];
       newOptions[idx] = { ...newOptions[idx], [field]: value };
-
       return { ...prev, options: newOptions };
     });
   };
 
-
   const removeOption = (index: number) => {
-<<<<<<< HEAD
-    setProduct((prev) => {
-      if (!prev) return prev;
-
-      // 옵션 삭제 후 새로운 배열 반환
-      const newOptions = prev.options.filter((_, i) => i !== index);
-
-      return { ...prev, options: newOptions };  // 상태 갱신
-=======
     if (!product) return;
 
     const optionToDelete = product.options[index];
@@ -203,10 +172,8 @@ export default function ProductEditPage() {
       ...product,
       options: newOptions,
       isOption: newOptions.length > 0  // 옵션 없으면 단일상품 처리
->>>>>>> main
     });
   };
-
 
   const handleAddSubImage = () => {
     if (subImageUrl) {
@@ -364,23 +331,6 @@ export default function ProductEditPage() {
 
       // 저장 성공 후 메시지 출력
       toast.success("상품 정보가 저장되었습니다.");
-
-      
-      // 상품 수정 후, 상품 목록 새로 고침
-      const fetchUpdatedProducts = async () => {
-        try {
-          const res = await fetch(`${API_URL}/api/products/list`);
-          const data = await res.json();
-          setProducts(data);  // 상품 목록 상태 갱신
-        } catch (err) {
-          console.error("상품 목록을 불러오는 중 오류 발생", err);
-        }
-      };
-
-      useEffect(() => {
-        fetchUpdatedProducts();  // 페이지가 로드되면 상품 목록을 불러오기
-      }, []);
-
 
       // 상품 목록 페이지로 이동
       router.push("/admin/productList");
