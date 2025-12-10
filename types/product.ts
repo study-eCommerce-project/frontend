@@ -22,7 +22,6 @@ export interface Option {
  * - UI에서 옵션의 수량 증가/감소/삭제할 때 사용
  */
 
-
 export interface SelectedOption extends Option {
   optionValue: string;
   count: number;  // 수량만 추가
@@ -49,6 +48,7 @@ export interface Product {
   mainImg?: string;       // 대표 이미지 URL
 
   /** 상세 페이지 전용 필드 (optional) */
+  description?: string;    // 상품 설명
   subImages?: string[];    // 상세 이미지 목록
   consumerPrice?: number;  // 원가(정가)
   isOption?: number;       // 옵션 여부 (1 = 옵션 있음)
@@ -56,4 +56,10 @@ export interface Product {
   categoryPath?: string;   // 카테고리 경로 (ex: "상의 > 후드티")
   likeCount?: number;      // 좋아요 수
   userLiked?: boolean;     // 현재 로그인한 사용자가 좋아요 눌렀는지
+}
+
+export interface DetailBlock {
+  type: "text" | "image";
+  content?: string;
+  url?: string;
 }

@@ -13,10 +13,7 @@ import type { CategoryTree } from "@/types/category";
 
 export default function ProductEditPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
-  // const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL; 
   const router = useRouter();
-
-
   const params = useParams();
   const productId = params?.id;
 
@@ -26,7 +23,7 @@ export default function ProductEditPage() {
   const [selectedBig, setSelectedBig] = useState<string>("");
   const [selectedMid, setSelectedMid] = useState<string>("");
   const [subImageUrl, setSubImageUrl] = useState<string>("");
-
+  const [deletedOptionIds, setDeletedOptionIds] = useState<number[]>([]); // 옵션 삭제를 위한 배열
 
   // ------------------------------
   // 카테고리 트리 fetch
@@ -66,8 +63,6 @@ export default function ProductEditPage() {
           mainImg: raw.mainImg ?? "",
           subImages: raw.subImages?.map((img: any) => ({
             imageUrl: img.imageUrl,
-            sortOrder: img.sortOrder,
-            productId: img.productId,
           })) ?? [],
           productStatus: raw.productStatus ?? 10,
           isShow: raw.isShow ?? true,
@@ -163,11 +158,21 @@ export default function ProductEditPage() {
 
   const removeOption = (index: number) => {
     if (!product) return;
-    setProduct((prev) =>
-      prev
-        ? { ...prev, options: prev.options.filter((_, i) => i !== index) }
-        : prev
-    );
+
+    const optionToDelete = product.options[index];
+
+    // optionId가 있는 경우만 삭제 목록에 추가
+    if (optionToDelete.optionId) {
+      setDeletedOptionIds((prev: number[]) => [...prev, optionToDelete.optionId as number]);
+    }
+
+    const newOptions = product.options.filter((_, i) => i !== index);
+
+    setProduct({
+      ...product,
+      options: newOptions,
+      isOption: newOptions.length > 0  // 옵션 없으면 단일상품 처리
+    });
   };
 
   const handleAddSubImage = () => {
@@ -211,7 +216,6 @@ export default function ProductEditPage() {
     }
   };
 
-
   const removeSubImage = (index: number) => {
     setProduct((prev) => {
       if (prev === null) {
@@ -241,6 +245,46 @@ export default function ProductEditPage() {
     });
   };
 
+  // ------------------ AI 상품 설명 자동 생성 ------------------
+  const handleGenerateDescription = async () => {
+    if (!product?.productName) {
+      toast.error("상품명을 먼저 입력해주세요.");
+      return;
+    }
+
+    const imageUrls = [
+      product.mainImg,
+      ...((product.subImages ?? []).map(img => img.imageUrl))
+    ];
+
+    try {
+      const res = await fetch(`${API_URL}/api/admin/products/generate-description`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: product.productName,
+          price: product.sellPrice,
+          options: product.options.map((opt) => opt.optionValue).join(", "),
+          category_path: product.categoryCode,
+          image_urls: imageUrls,
+        }),
+      });
+
+      const data = await res.json();
+
+      setProduct(prev => prev ? ({
+        ...prev,
+        description: data.description ?? "",
+        blocks: data.blocks ?? [],
+      }) : prev);
+
+      toast.success("AI 설명이 생성되었습니다.");
+
+    } catch (err) {
+      console.error(err);
+      toast.error("AI 설명 생성 중 오류가 발생했습니다.");
+    }
+  };
 
   // ------------------------------
   // 저장
@@ -256,6 +300,11 @@ export default function ProductEditPage() {
     const payload: AdminProduct = {
       ...product,
       stock: product.isOption ? 0 : product.stock,
+      description:
+        product.blocks && product.blocks.length > 0
+          ? JSON.stringify(product.blocks)
+          : product.description, // 기존 설명 유지
+      deleteOptionIds: deletedOptionIds,    
       options: product.isOption
         ? product.options.map((opt) => ({
           ...opt,
@@ -264,6 +313,11 @@ export default function ProductEditPage() {
         }))
         : [],
     };
+
+    // 옵션이 0개라면 단일상품 처리
+    if (!payload.options || payload.options.length === 0) {
+      payload.isOption = false;
+    }
 
     try {
       const res = await fetch(`${API_URL}/api/admin/products/${productId}`, {
@@ -468,13 +522,36 @@ export default function ProductEditPage() {
               <label className="block text-sm font-semibold text-gray-700 mb-1">
                 상품 설명
               </label>
+
+              <button
+                type="button"
+                onClick={handleGenerateDescription}
+                className="px-3 py-1 mb-2 text-xs bg-black text-white rounded hover:bg-gray-800 cursor-pointer"
+              >
+                AI 자동 작성
+              </button>
+
               <textarea
                 className="w-full border rounded-md px-3 py-2 text-sm min-h-[120px]"
                 value={product.description || ""}
                 onChange={(e) => handleChange("description", e.target.value)}
               />
+            
+            {/* 블록 미리보기 */}
+              <div className="mt-4 space-y-4">
+                {product.blocks?.map((block, idx) => (
+                  <div key={idx}>
+                    {block.type === "text" && (
+                      <p className="text-sm text-gray-700 whitespace-pre-line">{block.content}</p>
+                    )}
+                    {block.type === "image" && (
+                      <img src={block.url} className="w-full rounded-lg" />
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-
+            
             {/* 가격 / 재고 */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Input

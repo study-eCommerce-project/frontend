@@ -358,20 +358,28 @@ export default function CheckoutPage() {
         body: JSON.stringify(orderData),
       });
 
-      if (!res.ok) throw new Error("결제 실패 (서버 오류)");
+      if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(msg);
+      }
 
       const result = await res.json();
       sessionStorage.setItem("lastOrder", JSON.stringify(result));
 
       clearCart();
       router.push("/order/complete");
-    } catch (err) {
-      console.error("결제 실패", err);
-      toast.error("결제 중 오류가 발생했습니다.");
+
+    } catch (err: any) {
+      console.error("결제 실패:", err);
+
+      const message = err?.message || "결제 처리 중 오류가 발생했습니다.";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
-  };
+    
+  };  
+
 
   if (itemsToShow.length === 0)
     return (

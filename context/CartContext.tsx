@@ -116,7 +116,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (isAdmin || !user) return;
 
     axios
-      .post(`/api/cart`, { productId, optionValue, quantity })  // optionId 대신 optionValue 사용
+      .post(`${API_URL}/api/cart`, { productId, optionValue, quantity })  // optionId 대신 optionValue 사용
       .then(() => debouncedLoadCart())
       .catch((err) => console.error("장바구니 담기 실패:", err));
   }
@@ -140,14 +140,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       await axios.put(`${API_URL}/api/cart/quantity`, { cartId, quantity }, { withCredentials: true });
     } catch (err : any) {
-      const msg = err?.response?.data || "오류 발생";
-      alert(msg);
-
       // 실패하면 서버값으로 rollback
       loadCart();
+
+      // CartPage에서 toast 쓰기 위해 에러 던짐
+      throw err;
     }
   }
-
 
   /** --------------------------------------
    * changeOption()
