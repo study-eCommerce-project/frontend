@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import IntroPage from "./intro/page";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
@@ -23,8 +22,6 @@ interface MainCategory {
 }
 
 export default function HomePage() {
-  const [showIntro, setShowIntro] = useState<boolean | null>(null);
-
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const BASE = process.env.NEXT_PUBLIC_IMAGE_BASE_URL;
 
@@ -47,12 +44,6 @@ export default function HomePage() {
 
   const truncate = (text: string, max = 15) =>
     text.length > max ? text.slice(0, max) + "..." : text;
-
-  // ▣ Intro 체크
-  useEffect(() => {
-    const seen = sessionStorage.getItem("introSeen");
-    setShowIntro(seen === "true" ? false : true);
-  }, []);
 
   // ▣ Main categories
   useEffect(() => {
@@ -97,12 +88,8 @@ export default function HomePage() {
   const startIdx = (currentPage - 1) * pageSize;
   const currentProducts = filteredProducts.slice(startIdx, startIdx + pageSize);
 
-  if (showIntro === null) return null; // 체크 완료 전 렌더링 X
-
-  // ▣ 렌더링
-  return showIntro ? (
-    <IntroPage onFinish={() => setShowIntro(false)} />
-  ) : (
+  // 렌더링
+  return (
     <div className="w-full overflow-x-hidden">
 
       {/* ▣ 1. 배너 */}

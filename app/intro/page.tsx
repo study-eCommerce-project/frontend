@@ -1,20 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-interface IntroProps {
-  onFinish: () => void;
-}
-
-export default function IntroPage({ onFinish }: IntroProps) {
+export default function IntroPage() {
   const introLines = ["Your Daily", "Journey"];
   const [mounted, setMounted] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const seen = sessionStorage.getItem("introSeen");
 
     if (seen === "true") {
-      onFinish(); // 이미 본 경우 바로 홈 화면
+      router.replace("/"); // 이미 본 경우 즉시 이동
       return;
     }
 
@@ -22,15 +20,15 @@ export default function IntroPage({ onFinish }: IntroProps) {
 
     const timer = setTimeout(() => {
       sessionStorage.setItem("introSeen", "true");
-      onFinish(); // 3초 후 홈 화면으로
+      router.replace("/");
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [onFinish]);
+  }, [router]);
 
-  const goHome = () => {
+  const handleClick = () => {
     sessionStorage.setItem("introSeen", "true");
-    onFinish(); // 버튼 클릭 시 홈 화면으로
+    router.replace("/");
   };
 
   const renderLine = (line: string, lineIdx: number) => {
@@ -82,7 +80,7 @@ export default function IntroPage({ onFinish }: IntroProps) {
       ))}
 
       <button
-        onClick={goHome}
+        onClick={handleClick}
         className="mt-10 px-8 py-4 bg-gray-700 text-white rounded-full text-xl font-semibold cursor-pointer"
       >
         Shop Now
