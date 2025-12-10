@@ -101,7 +101,7 @@ export default function ProductInfo({ product, isAdmin }: ProductInfoProps) {
           {product.consumerPrice?.toLocaleString()}원
         </p>
         <p className="text-3xl font-bold text-black">{product.sellPrice?.toLocaleString()}원</p>
-        <p className="text-gray-600 text-sm">재고: {product.stock}개</p>
+        {/* <p className="text-gray-600 text-sm">재고: {product.stock}개</p> */}
 
         {/* 옵션이 없고 재고가 0이면 품절 표시 */}
         {!product.isOption && product.stock === 0 && (
